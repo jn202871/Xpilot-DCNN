@@ -189,17 +189,20 @@
 	(if (equal? (AI.msg.to? 0) (AIself.name?))
 		(cond
 			((equal? (AI.msg.body? 0) "pause") (AI.presskey KEY_PAUSE) (AI.releasekey KEY_PAUSE))
-			(else (AI.talk (AI.msg.body? 0)))))
+			(else (AI.talk (AI.msg.body? 0))))) 
+
 			
 		(if (and (= (AIself.alive?) 0) (= alive.was 1) (= 1 (random 20)))
 			(AI.talk (string-append "/team " (number->string (AIself.team?)))))
-		(set! alive.was (AIself.alive?))		
+		(set! alive.was (AIself.alive?))
+				
 	(if (= 1 (AIself.alive?)) (begin
 		(cond
 			((and (> (AIshot.alert? 0) -1) (< (AIshot.alert? 0) 60))
 				(begin 
 					(AIself.turn (anglediff (AIself.heading?) (angleadd (AIshot.idir? 0) 180)))
 					(AIself.thrust 1)))
+			;LEFT OFF
 			((not (= -1 (AI.wallbetween (AIself.x?) (AIself.y?) (ship.x? 0) (ship.y? 0))))
 				;(AIself.turn (anglediff (AIself.heading?) (wall-edge (ship.xdir? 0) (ship.dist? 0))))
 				(turnto (wall-edge (ship.xdir? 0) (ship.dist? 0)))
