@@ -20,7 +20,7 @@ FEELER_DIRS.append(-90)
 
 def open_wall(xdir, dist):
     if(xdir == -1 or dist == -1):
-        return ai.selfTrackingDeg() + 180
+        return ai.angleAdd(int(ai.selfTrackingDeg()),180)
     else:
         max = -1
         for i in range(12):
@@ -31,6 +31,11 @@ def open_wall(xdir, dist):
                 max = i
         return i
         
+def change_tracking(direction):
+	change_heading(ai.angleAdd(int(ai.selfTrackingDeg()), ai.angleDiff(direction, int(ai.selfTrackingDeg()))))
+	
+def change_heading(direction):
+	ai.turn(ai.angleDiff(int(ai.selfHeadingDeg()), direction))
 
 def AI_loop():
 
@@ -45,8 +50,8 @@ def AI_loop():
     renemy_x = ai.closestRadarX()
     renemy_y = ai.closestRadarY()
     radar_angle = int(math.degrees(math.atan(abs(renemy_y)/abs(renemy_x + 0.00000001))))
-    heading_to_enemy = heading - ai.aimdir(0)
-    heading_to_dodge = heading - ai.shotVelDir(0)
+    heading_to_enemy = ai.angleDiff(heading, ai.aimdir(0))
+    heading_to_dodge = ai.angleDiff(heading, ai.angleAdd(ai.shotVelDir(0),180))
 
     # Wall Feelers
     wall_feeler0 = ai.wallFeeler(500, tracking)
@@ -73,62 +78,41 @@ def AI_loop():
     elif renemy_x > 0 and renemy_y < 0:
         radar_angle = 360 - radar_angle
 
-
-    print("open_wall: ",open_wall(tracking, 100))
-
-    print("wall_feeler 1: ",wall_feeler1)
-    print("wall_feeler 2: ",wall_feeler2)
-    print("shot alert: ", ai.shotAlert(0))
-    print("enemy id: ", enemy)
-    print("aimdir: ", ai.aimdir(0))
-    print("heading to enemy: ", heading_to_enemy)
-    print("heading to dodge: ", heading_to_dodge)
-    print("renemy_x: ", renemy_x)
-    print("renemy_y: ", renemy_y)
-    print("radar angle: ", radar_angle)
-    print("-------")
-
-    # Dodge shots
+    # Dodging and Shooting
     if(ai.shotAlert(0) > -1 and ai.shotAlert(0) < 80):
         print("Dodging")
-        ai.turn(heading_to_dodge)
+        ai.turnToDeg(heading_to_dodge)
         ai.thrust(1)
-
-    # Shoot nearest enemy
-    elif(ai.closestShipId() > -1 and abs(heading_to_enemy < 400)):
-        print("Shooting")
-        if(heading_to_enemy > 0):
-            ai.turnRight(1)
-        else:
-            ai.turnLeft(1)
-        ai.fireShot()
-
-    # Point at closest enemy on radar and chase
-    elif(ai.closestRadarX() > -1 and abs(radar_angle < 600)):
-        ai.turnToDeg(radar_angle)
-        if (ai.selfSpeed() < 10):
-            ai.thrust(1)
-
-    # Wall avoidance
+        
+    elif(ai.wallBetween(ai.selfX(),ai.selfY(),ai.screenEnemyX(0),ai.screenEnemyY(0)) != -1):
+    	change_heading(open_wall(radar_angle,ai.enemyDistance(0)))
+    	if(ai.selfSpeed() < 6):
+    		ai.thrust(1)
+    		
+    elif(ai.closestShipId() > -1 and abs(ai.angleDiff(heading,ai.aimdir(0))) < 5):
+    	change_heading(ai.aimdir(0))
+    	ai.fireShot()
+    	
+    elif(ai.closestShipId() > -1 and abs(ai.angleDiff(heading,ai.aimdir(0))) > 5):
+    	change_heading(ai.aimdir(0))
+    	
+    # Wall Avoidance
+    
     if((wall_feeler1 == wall_feeler2) and (wall_feeler1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
-        ai.turnToDeg(heading - (180 + tracking))
-#        if(ai.selfSpeed() < 10):
-        ai.thrust(1)
-        print("Turning 1: ",heading - (180 + tracking))
+        ai.turnToDeg(ai.angleDiff(heading, ai.angleAdd(tracking, 180)))
+        print("Turning 1: ",ai.angleDiff(heading, ai.angleAdd(tracking, 180)))
+        
     elif((wall_feeler1 < wall_feeler2) and (wall_feeler1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
-        ai.turnToDeg(heading - (180 - 15 + tracking))
-        ai.turn(15)
- #       if(ai.selfSpeed() < 10):
-        ai.thrust(1)
-        print("Turning 2: ",heading - (180 - 15 +tracking))
+        ai.turnToDeg(ai.angleDiff(heading, ai.angleAdd(180, ai.angleAdd(-15,tracking))))
+        if(ai.angleDiff(heading, ai.angleAdd(180, ai.angleAdd(-15,tracking))) < 30):
+        	ai.thrust(1)
+        print("Turning 2: ",ai.angleDiff(heading, ai.angleAdd(180, ai.angleAdd(-15,tracking))))
+        
     elif((wall_feeler1 > wall_feeler2) and (wall_feeler1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
-        ai.turnToDeg(heading - (180 + 15 + tracking))
-        ai.turn(-15)
-  #      if(ai.selfSpeed() < 10):
-        ai.thrust(1)
-        print("Turning 3: ",heading - (180 + 15 + tracking))
+        ai.turnToDeg(ai.angleDiff(heading, ai.angleAdd(180, ai.angleAdd(15,tracking))))
+        if(ai.angleDiff(heading, ai.angleAdd(180, ai.angleAdd(15,tracking))) < 30):
+        	ai.thrust(1)
+        print("Turning 3: ",ai.angleDiff(heading, ai.angleAdd(180, ai.angleAdd(15,tracking))))
+    	
 
-    #if(ai.selfSpeed() < 5):
-    #    ai.thrust(1)
-
-ai.start(AI_loop, ["-name", "Morton", "-join", "localhost"])
+ai.start(AI_loop, ["-name", "ExpertSystem", "-join", "localhost"])
