@@ -1,3 +1,6 @@
+# Rewrite of Morton for the new Xpilot
+# by Jim O'Connor, 2023
+
 import libpyAI as ai
 import math
 
@@ -73,6 +76,21 @@ def AI_loop():
     elif renemy_x > 0 and renemy_y < 0:
         radar_angle = 360 - radar_angle
 
+
+    print("open_wall: ",open_wall(tracking, 100))
+
+    print("wall_feeler 1: ",wall_feeler1)
+    print("wall_feeler 2: ",wall_feeler2)
+    print("shot alert: ", ai.shotAlert(0))
+    print("enemy id: ", enemy)
+    print("aimdir: ", ai.aimdir(0))
+    print("heading to enemy: ", heading_to_enemy)
+    print("heading to dodge: ", heading_to_dodge)
+    print("renemy_x: ", renemy_x)
+    print("renemy_y: ", renemy_y)
+    print("radar angle: ", radar_angle)
+    print("-------")
+
     # Dodge shots
     if(ai.shotAlert(0) > -1 and ai.shotAlert(0) < 80):
         print("Dodging")
@@ -116,4 +134,4 @@ def AI_loop():
     #if(ai.selfSpeed() < 5):
     #    ai.thrust(1)
 
-ai.start(AI_loop, ["-name", "Sel", "-join", "localhost"])
+ai.start(AI_loop, ["-name", "Morton", "-join", "localhost"])

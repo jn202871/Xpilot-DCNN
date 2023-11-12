@@ -19,6 +19,8 @@ FEELER_DIRS.append(-90)
 
 
 def open_wall(xdir, dist):
+    if(dist > 2000):
+        dist = 2000
     if(xdir == -1 or dist == -1):
         return ai.angleAdd(int(ai.selfTrackingDeg()),180)
     else:
