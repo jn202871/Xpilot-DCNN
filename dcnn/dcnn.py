@@ -5,12 +5,14 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
+import onnx
 
 # Hyperparameters
 alpha = 0.001
 epochs = 10
 hiddenlayers = 3
-
+diagram = True
+'''
 # Initialize wandb
 wandb.init(
     project="xpilot_dcnn",
@@ -29,7 +31,7 @@ cursor.execute("SELECT winloss, rollout FROM data LIMIT 100000")
 db_data = cursor.fetchall()
 conn.close()
 print("Connected to SQLite database and fetched data")
-
+'''
 # Preprocess data, WIP
 
 # Create Dataset and Dataloader, WIP
@@ -38,10 +40,11 @@ print("Connected to SQLite database and fetched data")
 class DCNNClassifier(nn.Module):
     def __init__(self):
         super(DCNNClassifier, self).__init__()
-        self.conv1 = nn.Conv2d(in_channnels=1, out_channels=128, kernel_size=3, padding=1)
-        self.fc1 = nn.Linear(128,128)
-        self.fc2 = nn.Linear(128,128)
-        self.fc3 = nn.Linear(128,64)
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=128, kernel_size=3, padding=1)
+        self.fc1 = nn.Linear(128,64)
+        self.fc2 = nn.Linear(64,32)
+        self.fc3 = nn.Linear(32,1)
+        self.sigmoid = nn.Sigmoid()
     
     def forward(self, x):
         x = self.conv1(x)
@@ -52,7 +55,7 @@ class DCNNClassifier(nn.Module):
         x = self.fc2(x)
         x = torch.relu(x)
         x = self.fc3(x)
-        x = torch.relu(x)
+        x = self.sigmoid(x)
         x = torch.squeeze(x)
         return x
 
@@ -62,9 +65,11 @@ print("DCNN classifier constructed")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("Using Compute Resource:", device)
 
-# Move model to device
-model = DCNNClassifier().to(device)
 
+# Move model to device
+inputs = torch.randn(32,1,128,128)
+model = DCNNClassifier().to(device)
+'''
 # Setup Training
 criterion = nn.BCELoss()
 optimizer = optim.Adam(model.parameters(), lr=alpha)
@@ -93,3 +98,8 @@ for epoch in range(epochs):
 
     avg_loss = sum(losses) / len(losses)
     wandb.log({"epoch": epoch, "loss": avg_loss})
+'''
+
+# Produce Architecture Diagram
+if(diagram):
+	torch.onnx.export(model, inputs, 'dcnn.onnx', input_names=["playdata"], output_names=["fitness"])
