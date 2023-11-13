@@ -19,7 +19,8 @@ wandb.init(
     config={
         "leanring rate": alpha,
         "architecture": "DCNN",
-        "epochs": epochs,
+        "hiddenlayers": hiddenlayers,
+        "epochs": epochs
     }
 )
 print("Wandb run initialized")
@@ -27,7 +28,7 @@ print("Wandb run initialized")
 # Connect to SQLite database
 conn = sqlite3.connect('xpilot_data.db')
 cursor = conn.cursor()
-cursor.execute("SELECT winloss, rollout FROM data LIMIT 100000")
+cursor.execute("SELECT winloss, playdata FROM data LIMIT 100000")
 db_data = cursor.fetchall()
 conn.close()
 print("Connected to SQLite database and fetched data")
