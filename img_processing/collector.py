@@ -71,8 +71,8 @@ def AI_loop():
   # Enemy Heading And Position Tracking
   enemy = ai.closestShipId()
   if (enemy != -1):
-    x_cord = int(ai.screenEnemyX(0) / 35)
-    y_cord = 31 - int(ai.screenEnemyY(0) / 35)
+    ex_cord = int(ai.screenEnemyX(0) / 35)
+    ey_cord = 31 - int(ai.screenEnemyY(0) / 35)
     heading = ai.enemyHeadingDeg(0)
     if (heading == 360):
       heading -= 1
@@ -87,7 +87,7 @@ def AI_loop():
       headingSerRow = 1
     headingSerCol = headingIndex
     enemyVal = enemyHeadingArr[headingSerRow][headingSerCol]
-    area[y_cord][x_cord] = enemyVal
+    area[ey_cord][ex_cord] = enemyVal
   
   # Bullet Tracking
   bulletIndex = 0
@@ -100,11 +100,18 @@ def AI_loop():
     bulletIndex += 1
   for bullet in bullets:
     area[bullet[1]][bullet[0]] = 3
+  
+  # Print Area
   if (ai.selfAlive() == 1):
     for row in area:
       for val in row:
         print(val, end="")
       print()
+
+  # ASCII Converstion
+  area[y_cord][x_cord] = ord(shipVal)
+  if (enemy != -1):
+    area[ey_cord][ex_cord] = ord(enemyVal)
   
     
 ai.start(AI_loop,["-name","Collector","-join","localhost"])
