@@ -1,16 +1,25 @@
 import libpyAI as ai
 import numpy as num
 import random as random
-import PIL import ImageGrab
+from PIL import Image, ImageGrab
 
 image_array = []
+alive = 1
+rnd = 0
 
 def AI_loop():
+  global image_array,alive,rnd
+  if ai.selfAlive() != alive:
+    rnd += 1
+    alive = ai.selfAlive()
+    
+  if rnd == 4:
+    image_array[0].save('test.gif', save_all=True, append_images=image_array[1:])
+    ai.quit()
   #Image Collection
-
-  screenshot = ImageGrab.grab(bbox=(0,0,0,0))
-  image_array.append(screnshot)
-  
+  if alive == 1:
+    screenshot = ImageGrab.grab(xdisplay=":0")
+    image_array.append(screnshot)
 
   #Release keys
   ai.thrust(0)
