@@ -2,6 +2,7 @@ import libpyAI as ai
 import numpy as num
 import random as random
 from PIL import Image, ImageGrab
+import sqlite3
 
 def AI_loop():
 
@@ -96,17 +97,18 @@ def AI_loop():
     bulletX = int(ai.shotX(bulletIndex)/35)
     bulletY = 31 - int(ai.shotY(bulletIndex)/35)
     bullets.append([bulletX,bulletY])
-    print(bullets)
     bulletIndex += 1
   for bullet in bullets:
     area[bullet[1]][bullet[0]] = 3
   
   # Print Area
+  '''
   if (ai.selfAlive() == 1):
     for row in area:
       for val in row:
         print(val, end="")
       print()
+  '''
 
   # ASCII Converstion
   area[y_cord][x_cord] = ord(shipVal)
@@ -286,5 +288,13 @@ def AI_loop():
     elif leftWallT < rightWallT:
       ai.turnRight(1)
       turnRight = 1
+  if (ai.selfAlive() == 1):
+    conn = sqlite3.connect('xpilot_data.db')
+    frameStr = ','.join(str(item) for innerlist in area for item in innerlist)
+    actionStr = str(thrust) + "," + str(fireShot) + "," +str(turnLeft) + "," + str(turnRight)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO frames (frame,actions) values(?,?)",(frameStr,actionStr))
+    conn.commit()
+    conn.close()
     
 ai.start(AI_loop,["-name","Collector","-join","localhost"])

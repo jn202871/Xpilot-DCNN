@@ -5,22 +5,21 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
-import onnx
 
 # Hyperparameters
 alpha = 0.001
 epochs = 10
 hiddenlayers = 3
-diagram = True
-'''
+
 # Initialize wandb
 wandb.init(
-    project="xpilot_dcnn",
+    project="xpilot_cloning",
     config={
         "leanring rate": alpha,
         "architecture": "DCNN",
-        "hiddenlayers": hiddenlayers,
-        "epochs": epochs
+        "batch_size": 1,
+        "epochs": epochs,
+        "dataset_size": 50000
     }
 )
 print("Wandb run initialized")
@@ -28,29 +27,49 @@ print("Wandb run initialized")
 # Connect to SQLite database
 conn = sqlite3.connect('xpilot_data.db')
 cursor = conn.cursor()
-cursor.execute("SELECT winloss, playdata FROM data LIMIT 100000")
+cursor.execute("SELECT frame, actions FROM frames LIMIT 50000")
 db_data = cursor.fetchall()
 conn.close()
 print("Connected to SQLite database and fetched data")
-'''
-# Preprocess data, WIP
 
-# Create Dataset and Dataloader, WIP
+# Preprocess data
+actions = [[int(number) for number in string[1].split(',')] for string in db_data]
+frames = [[int(number) for number in string[0].split(',')] for string in db_data]
+
+def convert32x32(frame):
+  return [frame[i:i + 32] for i in range(0,1024,32)]
+
+frames = [convert32x32(frame) for frame in frames]
+
+actions = torch.tensor(actions, dtype=torch.float32)
+frames = torch.tensor(frames, dtype=torch.float32)
+
+print("Data preprocessed")
+
+# Create Dataset and Dataloader
+dataset = data.TensorDataset(frames, actions)
+
+split_ratio = 0.8
+split_idx = int(len(dataset) * split_ratio)
+train_dataset, val_dataset = data.random_split(dataset, [split_idx, len(dataset) - split_idx])
+
+train_loader = data.DataLoader(train_dataset, batch_size=1, shuffle=True)
+val_loader = data.DataLoader(val_dataset, batch_size=1, shuffle=False)
 
 # Construct DCNN classifier
 class DCNNClassifier(nn.Module):
     def __init__(self):
         super(DCNNClassifier, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=128, kernel_size=3, padding=1)
-        self.fc1 = nn.Linear(128,64)
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=3, padding=1)
+        self.fc1 = nn.Linear(32*32,64)
         self.fc2 = nn.Linear(64,32)
-        self.fc3 = nn.Linear(32,1)
+        self.fc3 = nn.Linear(32,4)
         self.sigmoid = nn.Sigmoid()
     
     def forward(self, x):
         x = self.conv1(x)
         x = torch.relu(x)
-        # x.view?
+        x = x.view(x.size(0), -1)
         x = self.fc1(x)
         x = torch.relu(x)
         x = self.fc2(x)
@@ -68,9 +87,8 @@ print("Using Compute Resource:", device)
 
 
 # Move model to device
-inputs = torch.randn(32,1,128,128)
 model = DCNNClassifier().to(device)
-'''
+
 # Setup Training
 criterion = nn.BCELoss()
 optimizer = optim.Adam(model.parameters(), lr=alpha)
@@ -82,6 +100,7 @@ for epoch in range(epochs):
 
         # Forward pass
         outputs = model(inputs)
+        outputs = outputs.unsqueeze(0)
         loss = criterion(outputs, targets)
 
         # Backward pass
@@ -89,18 +108,23 @@ for epoch in range(epochs):
         loss.backward()
         optimizer.step()
 
-    losses = []
+    val_losses = []
     with torch.no_grad():
-        for inputs, targets in test_loader:
+        for inputs, targets in val_loader:
             inputs, targets = inputs.to(device), targets.to(device)
-            outputs = model(inputs)
-            loss = criterion(outputs, targets)
-            losses.append(loss.item())
+            val_outputs = model(inputs)
+            val_outputs = val_outputs.unsqueeze(0)
+            val_loss = criterion(val_outputs, targets)
+            val_losses.append(val_loss.item())
+    avg_val_loss = sum(val_losses) / len(val_losses)
+    print(f"Epoch {epoch+1}/{epochs}, Training Loss: {loss.item()}, Validation Loss: {avg_val_loss}")
 
-    avg_loss = sum(losses) / len(losses)
-    wandb.log({"epoch": epoch, "loss": avg_loss})
-'''
+    wandb.log({"train_loss": loss.item(), "val_loss": avg_val_loss,"epoch": epoch})
 
-# Produce Architecture Diagram
-if(diagram):
-	torch.onnx.export(model, inputs, 'dcnn.onnx', input_names=["playdata"], output_names=["fitness"])
+# Save Trained Model
+torch.save(model, "model.pt")
+#artifact = wandb.Artifact('model', type='model')
+#artifact.add_file("model.pt")
+#wandb.log_artifact(artifact)
+wandb.finish()
+print("Trained Model Saved")
