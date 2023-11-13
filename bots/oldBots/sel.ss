@@ -202,7 +202,6 @@
 				(begin 
 					(AIself.turn (anglediff (AIself.heading?) (angleadd (AIshot.idir? 0) 180)))
 					(AIself.thrust 1)))
-			;LEFT OFF
 			((not (= -1 (AI.wallbetween (AIself.x?) (AIself.y?) (ship.x? 0) (ship.y? 0))))
 				;(AIself.turn (anglediff (AIself.heading?) (wall-edge (ship.xdir? 0) (ship.dist? 0))))
 				(turnto (wall-edge (ship.xdir? 0) (ship.dist? 0)))
