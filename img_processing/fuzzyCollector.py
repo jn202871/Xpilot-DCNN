@@ -121,6 +121,10 @@ def AI_loop():
   shoot = False
   align = False
   avoid = False
+  thrust = 0
+  fireShot = 0
+  turnRight = 0
+  turnLeft = 0
   # Wall Feelers
   heading = int(ai.selfHeadingDeg())
   tracking = int(ai.selfTrackingDeg())
@@ -222,47 +226,65 @@ def AI_loop():
   head_track_diff = int(180 - abs(abs(heading - tracking) - 180))
   if frontWallT > 500 and ai.selfSpeed() < 15:
     ai.thrust(1)
+    thrust = 1
   elif frontWallT > leftWallT and frontWallT > rightWallT and frontWallT > backWallT and ai.selfSpeed() < 15:
     ai.thrust(1)
+    thrust = 1
   elif trackWallT < 300 and 270 >= abs(heading-tracking) >= 90:
     ai.thrust(1)
+    thrust = 1
   elif backWall < 10:
     ai.thrust(1)
+    thrust = 1
   elif ai.selfSpeed() == 0:
     ai.setPower(5)
     ai.thrust(1)
+    thrust = 1
   elif trackWall < 170 and head_track_diff > 90:
     ai.thrust(1)
+    thrust = 1
   elif backWall < 170 and head_track_diff > 90:
     ai.thrust(1)
+    thrust = 1
     
   aimDiff = ((ai.aimdir(0)-heading+540)%360)-180
   trackDiff = ((tracking-heading+540)%360)-180
   # if behavior is shoot
   if shoot:
     ai.fireShot()
+    fireShot = 1
   # if behavior is align
   if align:
     if aimDiff > 0:
       ai.turnLeft(1)
+      turnLeft = 1
     elif aimDiff < 0:
       ai.turnRight(1)
+      turnRight = 1
   if avoid: # If behavior is not align then avoid
     if leftWallT > rightWallT and trackWallT > 500 and ai.selfSpeed() > 5:
       ai.turnLeft(1)
+      turnLeft = 1
     elif leftWallT < rightWallT and trackWallT > 500 and ai.selfSpeed() > 5:
       ai.turnRight(1)
+      turnRight = 1
     elif trackDiff > 0 and trackWallT < 500 and ai.selfSpeed() > 10:
       ai.turnRight(1)
+      turnRight = 1
     elif trackDiff < 0 and trackWallT < 500 and ai.selfSpeed() > 10:
       ai.turnLeft(1)
+      turnLeft = 1
     elif leftWallT > rightWallT and trackWallT < 500:
       ai.turnLeft(1)
+      turnLeft = 1
     elif rightWallT > leftWallT and trackWallT < 500:
       ai.turnRight(1)
+      turnRight = 1
     elif leftWallT > rightWallT:
       ai.turnLeft(1)
+      turnLeft = 1
     elif leftWallT < rightWallT:
       ai.turnRight(1)
+      turnRight = 1
     
 ai.start(AI_loop,["-name","Collector","-join","localhost"])
