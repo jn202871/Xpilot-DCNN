@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
-		<title>Dimension by HTML5 UP</title>
+		<title>X-Pilot DCNN</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
@@ -41,13 +41,13 @@
 							<article id="overview">
 								<h2 class="major">Overview</h2>
 								<span class="image main"><img src="images/pic01.jpg" alt="" /></span>
-								<p>Aenean ornare velit lacus, ac varius enim ullamcorper eu. Proin aliquam facilisis ante interdum congue. Integer mollis, nisl amet convallis, porttitor magna ullamcorper, amet egestas mauris. Ut magna finibus nisi nec lacinia. Nam maximus erat id euismod egestas. By the way, check out my <a href="#work">awesome work</a>.</p>
-								<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis dapibus rutrum facilisis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam tristique libero eu nibh porttitor fermentum. Nullam venenatis erat id vehicula viverra. Nunc ultrices eros ut ultricies condimentum. Mauris risus lacus, blandit sit amet venenatis non, bibendum vitae dolor. Nunc lorem mauris, fringilla in aliquam at, euismod in lectus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In non lorem sit amet elit placerat maximus. Pellentesque aliquam maximus risus, vel sed vehicula.</p>
+								<p>This project focuses on using a Deep Convolutional Neural Net to learn winning behaviors in X-Pilot and score an AI controlled bot based on its movement rather than its score or time survived. This score is important to determining the fitness of AI controlled agents as agents can achieve identitical scores with massively different tactics. We are seeking to emulate the human ability to look at a path and actions taken by an agent and determine if the agent is effective based on its style of play rather than its score.</p>
+								<p>We aim to use this DCNN to test variations of a known good expert system in order to determine what paremeters produce the best style of play. Due to the fact that this expert system is highly effective, a more traditional fitness function is unlikely to decern small differences in play that could result in a more effective agent.</p>
 							</article>
 
 						<!-- DCNN -->
 							<article id="DCNN">
-								<h2 class="major">DCNN</h2>
+								<h2 class="major">Neural Net Architecture</h2>
 								<span class="image main"><img src="images/pic02.jpg" alt="" /></span>
 								<p>Adipiscing magna sed dolor elit. Praesent eleifend dignissim arcu, at eleifend sapien imperdiet ac. Aliquam erat volutpat. Praesent urna nisi, fringila lorem et vehicula lacinia quam. Integer sollicitudin mauris nec lorem luctus ultrices.</p>
 								<p>Nullam et orci eu lorem consequat tincidunt vivamus et sagittis libero. Mauris aliquet magna magna sed nunc rhoncus pharetra. Pellentesque condimentum sem. In efficitur ligula tate urna. Maecenas laoreet massa vel lacinia pellentesque lorem ipsum dolor. Nullam et orci eu lorem consequat tincidunt. Vivamus et sagittis libero. Mauris aliquet magna magna sed nunc rhoncus amet feugiat tempus.</p>
@@ -57,7 +57,7 @@
 							<article id="goals">
 								<h2 class="major">Goals</h2>
 								<span class="image main"><img src="images/pic03.jpg" alt="" /></span>
-								<p>Lorem ipsum dolor sit amet, consectetur et adipiscing elit. Praesent eleifend dignissim arcu, at eleifend sapien imperdiet ac. Aliquam erat volutpat. Praesent urna nisi, fringila lorem et vehicula lacinia quam. Integer sollicitudin mauris nec lorem luctus ultrices. Aliquam libero et malesuada fames ac ante ipsum primis in faucibus. Cras viverra ligula sit amet ex mollis mattis lorem ipsum dolor sit amet.</p>
+								<p>Our goal in this project is to train a DCNN to determine how fit an agent is by training it on a dataset of rounds played by different AI controlled agents. Once trained, the DCNN should be able to tell how effective any AI system is compared to the dataset it was previously trained on. This could be used as a tool to benchmark AI systems in X-Pilot or as a fitness function for future work regarding a Genetic Algorithm.</p>
 							</article>
 
 						<!-- Results -->
