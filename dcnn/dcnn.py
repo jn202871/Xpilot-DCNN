@@ -5,6 +5,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
+import sys
+from torchvision.transforms import v2
+from PIL import Image
 
 # Hyperparameters
 alpha = 0.001
@@ -45,7 +48,7 @@ actions = torch.tensor(actions, dtype=torch.float32)
 frames = torch.tensor(frames, dtype=torch.float32)
 
 print("Data preprocessed")
-
+	
 # Create Dataset and Dataloader
 dataset = data.TensorDataset(frames, actions)
 
@@ -62,8 +65,9 @@ class DCNNClassifier(nn.Module):
         super(DCNNClassifier, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=3, padding=1)
         self.fc1 = nn.Linear(32*32,64)
-        self.fc2 = nn.Linear(64,32)
-        self.fc3 = nn.Linear(32,4)
+        self.fc2 = nn.Linear(64,64)
+        self.fc3 = nn.Linear(64,32)
+        self.fc4 = nn.Linear(32,4)
         self.sigmoid = nn.Sigmoid()
     
     def forward(self, x):
@@ -75,6 +79,8 @@ class DCNNClassifier(nn.Module):
         x = self.fc2(x)
         x = torch.relu(x)
         x = self.fc3(x)
+        x = torch.relu(x)
+        x = self.fc4(x)
         x = self.sigmoid(x)
         x = torch.squeeze(x)
         return x
