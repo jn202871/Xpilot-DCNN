@@ -1,6 +1,7 @@
 import random
 import math
 
+'''
 def wall_edge(xdir, dist):
     if(xdir == -1 or dist == -1):
         return ai.selfTrackingDeg() + 180
@@ -13,7 +14,7 @@ def wall_edge(xdir, dist):
             elif w > max:
                 max = i
         return i
-
+'''
 
 
 def AI_loop():
@@ -28,7 +29,7 @@ def AI_loop():
     enemy = ai.closestShipId()
     renemy_x = ai.closestRadarX()
     renemy_y = ai.closestRadarY()
-    radar_angle = int(math.degrees(math.atan(abs(renemy_y)/abs(renemy_x + 0.00000001)))) #angle btwn us and the enemy?
+    radar_angle = int(math.degrees(math.atan(abs(renemy_y)/abs(renemy_x + 0.00000001)))) #Angle where enemy is relative to grid
     heading_to_enemy = heading - ai.aimdir(0)
     heading_to_dodge = heading - ai.shotVelDir(0)
 
@@ -52,7 +53,7 @@ def AI_loop():
 
  
     # Skipped msg stuff
-    
+    '''
     if ai.selfAlive() == 1:
         
         if (ai.shotAlert(0) > -1) and (ai.shotAlert(0) < 60):
@@ -64,5 +65,12 @@ def AI_loop():
             if ai.selfSpeed() < 8:
                 ai.thrust(1) 
         
-        elif ai.screenEnemyXId(0) > -1 and 
+        elif ai.screenEnemyXId(0) > -1 and abs(ai.selfHeadingDeg()-ai.aimdir(0)) < 5:
+            ai.fireShot(1)
+            ai.turnToDeg(ai.aimdir(0))
+
+        elif ai.>-1 and abs(ai.selfHeadingDeg()-ai.aimdir(0)) > 5: #XDirection need to figure out     
+            ai.turnToDeg(ai.aimdir(0))
             
+        elif abs(
+ '''

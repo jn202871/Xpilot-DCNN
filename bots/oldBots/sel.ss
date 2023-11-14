@@ -191,13 +191,21 @@
 			((equal? (AI.msg.body? 0) "pause") (AI.presskey KEY_PAUSE) (AI.releasekey KEY_PAUSE))
 			(else (AI.talk (AI.msg.body? 0))))) 
 
-			
+
+		;If we're alive and alive.was=1 and a random number 0-19=1, prints out team, else set alive.was=whether or not we're alive	
 		(if (and (= (AIself.alive?) 0) (= alive.was 1) (= 1 (random 20)))
 			(AI.talk (string-append "/team " (number->string (AIself.team?)))))
 		(set! alive.was (AIself.alive?))
-				
+	
+	
+	;If we're alive, do all the conds			
 	(if (= 1 (AIself.alive?)) (begin
+		
 		(cond
+		;xdir=direction to shoot to hit the ship, # degrees to represent direction you should shoot in
+		
+		
+		    ;If we're getting shot at (alert between -1 and 60), then turn the amount returned by the difference btwn our heading and 
 			((and (> (AIshot.alert? 0) -1) (< (AIshot.alert? 0) 60))
 				(begin 
 					(AIself.turn (anglediff (AIself.heading?) (angleadd (AIshot.idir? 0) 180)))

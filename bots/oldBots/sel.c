@@ -28,10 +28,22 @@ void AImain(void) {
 	int wall_feeler1 = wall_feeler(500, feeler_dirs[1]);
 	int wall_feeler2 = wall_feeler(500, feeler_dirs[2]);
 
+    //If we're alive then, do all these ifs and elifs
 	if (AIself_alive()) {
+		
+		/**
+		If we're getting shot at, but the danger is less than 80
+		Then *see below* and thrust
+		TODO: figure out what idir is, figure out what turn is (is it trying to do turnToDeg or turning to the right as much as it can?
+		*/
 		if ((AIshot_alert(0) > -1) && (AIshot_alert(0) < 80)) {
 			AIself_turn(anglediff(AIself_heading(), angleadd(AIshot_idir(0), 180)));
 			AIself_thrust(1);
+		
+		/**
+		If there is a wall between us and the enemy
+		Then call function change_heading (see below) with parameter being the 
+		*/
 		} else if (AI_wallbetween(AIself_x(), AIself_y(), AIship_x(shipnum), AIship_y(shipnum)) != -1) {
 			change_heading(open_wall(AIship_xdir(shipnum), AIship_dist(shipnum)));
 			if (AIself_vel() < 6) AIself_thrust(1);
@@ -86,7 +98,7 @@ int open_wall(int xdir, int dist) {
 int change_tracking(int dir) {
 	change_heading(angleadd(AIself_track(), anglediff(dir, AIself_track())));
 }
-
+//TODO:  figure out what idir is, figure out what turn is (is it trying to do turnToDeg or turning to the right as much as it can?
 int change_heading(int dir) {
 	AIself_turn(anglediff(AIself_heading(), dir));
 }
