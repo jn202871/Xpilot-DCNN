@@ -28,6 +28,7 @@ void AImain(void) {
 	int wall_feeler1 = wall_feeler(500, feeler_dirs[1]);
 	int wall_feeler2 = wall_feeler(500, feeler_dirs[2]);
 
+	//xdir=direction to shoot to hit the ship, # degrees to represent direction you should shoot in
     //If we're alive then, do all these ifs and elifs
 	if (AIself_alive()) {
 		
