@@ -57,6 +57,9 @@ void AImain(void) {
 			change_tracking(AIradar_xdir(rshipnum));
 			AIself_shoot(1);
 			if (!((abs(anglediff(AIself_track(), AIradar_xdir(rshipnum))) < 15) && (AIself_vel() < 7))) AIself_thrust(1);
+
+			
+		//RUSSELL: FIGURE OUT WHAT EACH OF THE CONDITIONALS BELOW ARE DOING (IN WORDS)			
 		} else if (!(AIradar_x(rshipnum) < 0)) {
 			AIself_turn(anglediff(AIself_heading(), AIradar_xdir(rshipnum)));
 		}
