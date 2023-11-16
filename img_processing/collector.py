@@ -67,6 +67,7 @@ def AI_loop():
   headingSerCol = headingIndex
   shipVal = headingArr[headingSerRow][headingSerCol]
   area[y_cord][x_cord] = shipVal
+  area[y_cord][x_cord+1] = int(ai.selfSpeed())
   
   # Enemy Heading And Position Tracking
   enemy = ai.closestShipId()
@@ -88,6 +89,7 @@ def AI_loop():
     headingSerCol = headingIndex
     enemyVal = enemyHeadingArr[headingSerRow][headingSerCol]
     area[ey_cord][ex_cord] = enemyVal
+    area[ey_cord][ex_cord+1] = int(ai.enemySpeed(0))
   
   # Bullet Tracking
   bulletIndex = 0
@@ -95,23 +97,27 @@ def AI_loop():
   while(ai.shotAlert(bulletIndex) != -1):
     bulletX = int(ai.shotX(bulletIndex)/35)
     bulletY = 31 - int(ai.shotY(bulletIndex)/35)
-    bullets.append([bulletX,bulletY])
-    print(bullets)
+    bulletAlert = int(ai.shotAlert(bulletIndex))
+    if (bulletAlert == 30000):
+      bulletAlert = 0
+    bullets.append([bulletX,bulletY,bulletAlert])
     bulletIndex += 1
   for bullet in bullets:
     area[bullet[1]][bullet[0]] = 3
+    area[bullet[1]][bullet[0]+1] = bullet[2]
   
   # Print Area
+  '''
   if (ai.selfAlive() == 1):
     for row in area:
       for val in row:
         print(val, end="")
       print()
+  '''
 
   # ASCII Converstion
   area[y_cord][x_cord] = ord(shipVal)
   if (enemy != -1):
     area[ey_cord][ex_cord] = ord(enemyVal)
-  
     
 ai.start(AI_loop,["-name","Collector","-join","localhost"])
