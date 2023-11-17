@@ -1,0 +1,4 @@
+(run (csc -s -O2 -d1 xpai.ss -lxpilot_ai))
+(install-extension
+  'xpai
+  '("xpai.so"))

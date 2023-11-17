@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html><head><title>Tutorial: Using the xpai Python Interface</title>
+
+
+
+
+
+
+<style type="text/css">
+body {
+	background-color: black;
+	color: white;
+	align: center;
+}
+a:link { 
+	color: #FFB96A;
+	text-decoration: none;
+}
+a:visited {
+	color: #FF832B;
+	text-decoration: none;
+}
+a:hover { 
+	color: #86CFFF; 
+}
+a:active { 
+	color: #AB4B30; 
+}
+div.code
+{
+	margin: 20px;
+	font-family: courier;
+	white-space: pre;
+	font-weight: bold;
+}
+span.reg
+{
+	font-weight: normal;
+}
+span.code
+{
+	margin: 20px;
+	font-family: courier;
+	white-space: pre;
+	font-weight: bold;
+}
+div.inst
+{
+	margin: 20px;
+	font-family: courier;
+	font-weight:bold;
+}
+div.opt_desc
+{
+	margin-left: 20px;
+}
+</style></head><body>
+
+<script type="text/javascript">
+
+</script>
+<h2>Using xpai Python Interface</h2>
+First, start a server on your machine. (See the <a href="http://xpilot-ai.org/doc/tutorial_xpserver.html">xpserver tutorial</a> for help).<br><br>
+
+You must have installed Python and the <a href="http://xpilot-ai.org/xpilot-ai-0.5.3.tar.gz">Xpilot-AI C Library</a>.  Make sure that libxpilot_ai.so is installed in your library path somewhere.  Then download <a href="http://xpilot-ai.org/pyxpai.tar.gz">pyxpai.tar.gz</a>. Extract the contents of this file.<br><br>
+
+To build python xpai, type the following in the directory containing the extracted files:
+
+<div class="inst">python setup.py build</div>
+<div class="inst">cp build/lib*/xpai.so .</div>
+
+Now locate the file pytest.py in the same directory. This is the source code for a simple
+bot that spins in place. Since Python is an interpreted language instead of a compiled language like Java, all you have to do to run this bot is type:
+
+<div class="inst">python pytest.py</div>
+
+This should load up the Xpilot client. Now click the "Local" button and try to
+connect to the local Xpilot server that you started. If you didn't
+start a local Xpilot server, you can try connecting to a server on the
+internet. After the bot joins the game it should be just sitting there,
+spinning in place.<br><br>
+
+Now let's look at the code for pytest.py:
+
+<div class="code">import xpai
+
+def AImain():
+	xpai.self_turn(10)
+	return
+	
+
+xpai.set_AImain(AImain)
+
+xpai.setargs("-name jim")
+xpai.launch()
+</div>
+
+The python interface, xpai, is imported by the <i>import xpai</i> line. Xpai has all the functions that can be found in the <a href="http://xpilot-ai.org/doc/xpilot_python.xml">reference</a>.  Xpai also defines an abstract function named <i>AImain</i>, which must be defined by the user. In python, we must tell xpai which function is the AImain function. We do this with the <i>xpai.set_AImain(AImain)</i> line. <i>AImain</i> is a callback function which is called once for every frame of gameplay in Xpilot.  In this <i>AImain</i> the bot is instructed to spin 10 degrees, which it does for every frame of gameplay; more complicated bots, such as <a href="http://xpilot-ai.org/files/Morthon.py">Morthon</a>, do more complicated behaviors and call other functions to help calculate what the bot should do.<br><br>
+
+The <i>xpai.setargs("-name jim")</i> line simply sets the bot's name to jim, but <i>xpai.setargs(string)</i> can be used to pass any command line arguments to Xpilot upon startup, where <i>string</i> is a string containing the arguments desired. <i>xpai.launch()</i> starts Xpilot with the arguments given.
+
+
+
+For a more complicated bot that also uses command-line-arguments, try downloading <a href="http://xpilot-ai.org/files/Morthon.py">morthon.py</a> and putting it in your bot folder.  Run with:
+
+<div class="inst">python morthon.py</div>
+
+<p>Here is a list of valuable xpilot client options which you can use
+in the command args, the string input to the "xpilot" function. For a
+complete list, look at a copy of the <a href="http://www.die.net/doc/linux/man/man6/xpilot.6.html">Xpilot Manpage</a>.  You can use any of those options with Xpilot-AI.
+
+</p><div class="opt"><b>-port</b> <i>integer</i></div>
+<div class="opt_desc">Join server on certain port.  Also looks for servers on that port if you do a "local" search.</div>
+
+<div class="opt"><b>-name</b> <i>string</i></div>
+<div class="opt_desc">Name of the player.</div>
+
+<div class="opt"><b>-team</b> <i>integer</i></div>
+<div class="opt_desc">Team to try to join once connected to a server.</div>
+
+<div class="opt"><b>-display</b> :<i>integer</i></div>
+<div class="opt_desc">X windows display number on which to run Xpilot.  You can run a video framebuffer with the command <i>Xvfb</i> and then connect to that screen with this option (takes less CPU).  For example, run the command <i><b>Xvfb :1 -screen 0 1024x768x8 -auth noauth</b></i>, which will start a screen on :1.  Then use the option "<b>-display :1</b>" to run the xpilot client on it.</div>
+
+
+</body></html>
