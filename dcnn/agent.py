@@ -1,4 +1,7 @@
+# Jay Nash & Russell Kosovesky & Annika Hoag 2023 COM407
 # agent that reads the neural network from the .pt file to control the ship
+
+import libpyAI as ai
 
 def AI_loop():
     #Release keys
