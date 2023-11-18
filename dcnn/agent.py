@@ -2,6 +2,10 @@
 # agent that reads the neural network from the .pt file to control the ship
 
 import libpyAI as ai
+import torch
+
+# Model
+model = torch.load('model.pt')
 
 def AI_loop():
     #Release keys
