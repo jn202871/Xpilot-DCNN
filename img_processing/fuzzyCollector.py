@@ -67,8 +67,11 @@ def AI_loop():
     headingSerRow = 1
   headingSerCol = headingIndex
   shipVal = headingArr[headingSerRow][headingSerCol]
-  area[y_cord][x_cord] = shipVal
+  area[y_cord][x_cord] = 3
   area[y_cord][x_cord+1] = int(ai.selfSpeed())
+  area[y_cord][x_cord-1] = int(ai.aimdir(0))
+  area[y_cord+1][x_cord] = int(ai.selfHeadingDeg())
+  area[y_cord-1][x_cord] = int(ai.selfTrackingDeg())
   
   # Enemy Heading And Position Tracking
   enemy = ai.closestShipId()
@@ -89,8 +92,10 @@ def AI_loop():
       headingSerRow = 1
     headingSerCol = headingIndex
     enemyVal = enemyHeadingArr[headingSerRow][headingSerCol]
-    area[ey_cord][ex_cord] = enemyVal
+    area[ey_cord][ex_cord] = 4
     area[ey_cord][ex_cord+1] = int(ai.enemySpeed(0))
+    area[y_cord+1][x_cord] = int(ai.enemyHeadingDeg(0))
+    area[y_cord-1][x_cord] = int(ai.enemyTrackingDeg(0))
   
   # Bullet Tracking
   bulletIndex = 0
@@ -104,7 +109,7 @@ def AI_loop():
     bullets.append([bulletX,bulletY,bulletAlert])
     bulletIndex += 1
   for bullet in bullets:
-    area[bullet[1]][bullet[0]] = 3
+    area[bullet[1]][bullet[0]] = 5
     area[bullet[1]][bullet[0]+1] = bullet[2]
   
   # Print Area
@@ -115,11 +120,6 @@ def AI_loop():
         print(val, end="")
       print()
   '''
-
-  # ASCII Converstion
-  area[y_cord][x_cord] = ord(shipVal)
-  if (enemy != -1):
-    area[ey_cord][ex_cord] = ord(enemyVal)
   #Release keys
   ai.thrust(0)
   ai.turnLeft(0)

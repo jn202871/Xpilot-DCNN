@@ -30,7 +30,7 @@ print("Wandb run initialized")
 # Connect to SQLite database
 conn = sqlite3.connect('xpilot_data.db')
 cursor = conn.cursor()
-cursor.execute("SELECT frame, actions FROM frames LIMIT 40000")
+cursor.execute("SELECT frame, actions FROM frames LIMIT 4000")
 db_data = cursor.fetchall()
 conn.close()
 print("Connected to SQLite database and fetched data")
