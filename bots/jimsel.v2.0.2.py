@@ -1,7 +1,30 @@
-import libpyAI as ai 
-import random
-import math 
+'''
+Russell Kosovsky 
 
+    An attempt to rewrite the cherished bot, "sel" from C to Python.
+
+        Continuing off a modified version of Jim's bot: "jimsel". *cough cough* dogwater
+            - jimsel claims to be a rewrite of some unknown suspiciopus bot named "morton"
+            - it seems to me like it was halfway done and then abandoned (unless morton 
+            is supposed to be bad)
+            - but after reading sel's C code and jimsel's python code, it seemes that 
+            jimsel is actually a past attempt to rewrite of sel
+            - requardless, jimsel is a good starting point to rewrite sel in python
+
+        it seems like open_wall() is the only rewritten C function from sel
+
+        what we have so far from jimsel (other than open_wall) seemes to be everthing 
+        that could easily be rewritten in python without needing any of the other
+        "missing function" from sel that we need to rewrite.
+
+        next step: 
+            - start at beginning of the first logic chunk and identify what 
+            functions (from sel) need to be rewritten
+
+'''
+
+import math 
+import libpyAI as ai 
 
 FEELER_DIRS = []
 FEELER_DIRS.append(0)
