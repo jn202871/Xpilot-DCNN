@@ -1,0 +1,3 @@
+((author "David A. Arroyo <david.a.arroyo@gmail.com>")
+   (synopsis "Scheme bindings to the Xpilot-AI library")
+   (license "MIT"))
