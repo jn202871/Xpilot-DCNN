@@ -1,7 +1,6 @@
-
 import libpyAI as ai 
 import random
-import math
+import math 
 
 def AI_loop():
 
@@ -10,6 +9,8 @@ def AI_loop():
     ai.turnLeft(0)
     ai.turnRight(0)
     ai.setPower(25)
+
+    ai.thrust(1)
 
 ai.start(AI_loop,["-name","SelPy","-join","localhost"])
 
