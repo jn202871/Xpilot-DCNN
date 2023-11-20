@@ -59,17 +59,25 @@ void AImain(void) {
 			if (!((abs(anglediff(AIself_track(), AIradar_xdir(rshipnum))) < 15) && (AIself_vel() < 7))) AIself_thrust(1);
 
 			
-		//RUSSELL: FIGURE OUT WHAT EACH OF THE CONDITIONALS BELOW ARE DOING (IN WORDS)			
+		//RUSSELL: FIGURE OUT WHAT EACH OF THE CONDITIONALS BELOW ARE DOING (IN WORDS)	
+
 		} else if (!(AIradar_x(rshipnum) < 0)) {
 			AIself_turn(anglediff(AIself_heading(), AIradar_xdir(rshipnum)));
 		}
 
 		if ((wall_feeler1 == wall_feeler2) && (wall_feeler1 < (20 * AIself_vel())) && (AIself_vel() > 1)) {
+
 			AIself_turn(anglediff(AIself_heading(), angleadd(AIself_track(), 180)));
-		} else if ((wall_feeler1 < wall_feeler2) && (wall_feeler1 < (20 * AIself_vel())) && (AIself_vel() > 1)) {
+		} 
+		
+		else if ((wall_feeler1 < wall_feeler2) && (wall_feeler1 < (20 * AIself_vel())) && (AIself_vel() > 1)) {
+
 			AIself_turn(anglediff(AIself_heading(), angleadd(180, angleadd(-15, AIself_track()))));
 			if (anglediff(AIself_heading(), angleadd(180, angleadd(-15, AIself_track()))) < 30) AIself_thrust(1);
-		} else if ((wall_feeler1 > wall_feeler2) && (wall_feeler2 < (20 * AIself_vel())) && (AIself_vel() > 1)) {
+		} 
+		
+		else if ((wall_feeler1 > wall_feeler2) && (wall_feeler2 < (20 * AIself_vel())) && (AIself_vel() > 1)) {
+			
 			AIself_turn(anglediff(AIself_heading(), angleadd(180, angleadd(15, AIself_track()))));
 			if (anglediff(AIself_heading(), angleadd(180, angleadd(15, AIself_track()))) < 30) AIself_thrust(1);
 		}

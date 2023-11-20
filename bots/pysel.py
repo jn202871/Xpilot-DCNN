@@ -2,156 +2,202 @@ import libpyAI as ai
 import random
 import math 
 
+
+FEELER_DIRS = []
+FEELER_DIRS.append(0)
+FEELER_DIRS.append(15)
+FEELER_DIRS.append(-15)
+FEELER_DIRS.append(30)
+FEELER_DIRS.append(-30)
+FEELER_DIRS.append(45)
+FEELER_DIRS.append(-45)
+FEELER_DIRS.append(60)
+FEELER_DIRS.append(-60)
+FEELER_DIRS.append(75)
+FEELER_DIRS.append(-75)
+FEELER_DIRS.append(90)
+FEELER_DIRS.append(-90)
+
+
+def open_wall(xdir, dist):
+    if(xdir == -1 or dist == -1):
+        return ai.selfTrackingDeg() + 180
+    else:
+        max = -1
+        for i in range(12):
+            w = ai.wallFeeler(dist, xdir+FEELER_DIRS[i])
+            if w == dist:
+                return i
+            elif w > max:
+                max = i
+        return i
+
 def AI_loop():
 
-    #Release keys
     ai.thrust(0)
     ai.turnLeft(0)
     ai.turnRight(0)
-    ai.setPower(25)
+    ai.setTurnSpeedDeg(20)
 
-    ai.thrust(1)
+    heading = int(ai.selfHeadingDeg())
+    tracking = int(ai.selfTrackingDeg())
+
+    enemy = ai.closestShipId()
+
+    renemy_x = ai.closestRadarX()
+    renemy_y = ai.closestRadarY()
+
+    radar_angle = int(math.degrees(math.atan(abs(renemy_y)/abs(renemy_x + 0.00000001))))
+
+    heading_to_enemy = heading - ai.aimdir(0)
+    heading_to_dodge = heading - ai.shotVelDir(0)
+
+    # Wall Feelers
+    wf_0 = ai.wallFeeler(500, tracking)
+
+    wf_1 = ai.wallFeeler(500, tracking + 15)
+    wf_2 = ai.wallFeeler(500, tracking - 15)
+    
+    wf_3 = ai.wallFeeler(500, tracking + 30)
+    wf_4 = ai.wallFeeler(500, tracking - 30)
+    wf_5 = ai.wallFeeler(500, tracking + 45)
+    wf_6 = ai.wallFeeler(500, tracking - 45)
+    wf_7 = ai.wallFeeler(500, tracking + 60)
+    wf_8 = ai.wallFeeler(500, tracking - 60)
+    wf_9 = ai.wallFeeler(500, tracking + 75)
+    wf_10 = ai.wallFeeler(500, tracking - 75)
+    wf_11 = ai.wallFeeler(500, tracking + 90)
+    wf_12 = ai.wallFeeler(500, tracking - 90)
+    
+    renemy_x = renemy_x - ai.selfRadarX()
+    renemy_y = renemy_y - ai.selfRadarY()
+
+    if renemy_x < 0 and renemy_y > 0:
+        radar_angle = 180 - radar_angle
+    elif renemy_x < 0 and renemy_y < 0:
+        radar_angle = 180 + radar_angle
+    elif renemy_x > 0 and renemy_y < 0:
+        radar_angle = 360 - radar_angle
+
+    print("open_wall: ",open_wall(tracking, 100))
+
+    print("wf_1: ", wf_1)
+    print("wf_2: ", wf_2)
+    print("shot alert: ", ai.shotAlert(0))
+    print("enemy id: ", enemy)
+    print("aimdir: ", ai.aimdir(0))
+    print("heading to enemy: ", heading_to_enemy)
+    print("heading to dodge: ", heading_to_dodge)
+    print("renemy_x: ", renemy_x)
+    print("renemy_y: ", renemy_y)
+    print("radar angle: ", radar_angle)
+    print("-------")
+
+
+    
+    # Dodge shots
+    if(ai.shotAlert(0) > -1 and ai.shotAlert(0) < 80):
+        print("Dodging")
+        ai.turn(heading_to_dodge)
+        ai.thrust(1)
+    
+    # Shoot nearest enemy
+    elif(ai.closestShipId() > -1 and abs(heading_to_enemy < 400)):
+        print("Shooting")
+        if(heading_to_enemy > 0):
+            ai.turnRight(1)
+        else:
+            ai.turnLeft(1)
+        ai.fireShot()
+
+    # Point at closest enemy on radar and chase
+    elif(ai.closestRadarX() > -1 and abs(radar_angle < 600)):
+        ai.turnToDeg(radar_angle)
+        if (ai.selfSpeed() < 10):
+            ai.thrust(1)
+
+    
+
+    # Wall avoidance
+    if((wf_1 == wf_2) and (wf_1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
+        ai.turnToDeg(heading - (180 + tracking))
+        #if(ai.selfSpeed() < 10):
+        ai.thrust(1)
+        print("Turning 1: ",heading - (180 + tracking))
+    elif((wf_1 < wf_2) and (wf_1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
+        ai.turnToDeg(heading - (180 - 15 + tracking))
+        ai.turn(15)
+        #if(ai.selfSpeed() < 10):
+        ai.thrust(1)
+        print("Turning 2: ",heading - (180 - 15 +tracking))
+    elif((wf_1 > wf_2) and (wf_1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
+        ai.turnToDeg(heading - (180 + 15 + tracking))
+        ai.turn(-15)
+        #if(ai.selfSpeed() < 10):
+        ai.thrust(1)
+        print("Turning 3: ",heading - (180 + 15 + tracking))
+
 
 ai.start(AI_loop,["-name","SelPy","-join","localhost"])
 
 
 
+        
+'''
+def open_wall(xdir, dist):
+    if xdir == -1 or dist == -1:
+        return angle_add(ai.self_track(), 180)
+    else:
+        max_dist = -1
+        max_i = -1
+        for i in range(13):
+            w = wf_(dist, angle_add(xdir, feeler_dirs[i]))
+            if w == dist:
+                return i
+            elif w > max_dist:
+                max_dist = w
+                max_i = i
+        return max_i
 
 
-#################################################################
-############################ sel C code #########################
-#################################################################
+def wf_(range, degree):
+    x = ai.self_x() + range * math.cos(math.radians(degree))
+    y = ai.self_y() + range * math.sin(math.radians(degree))
+    res = ai.wall_between(ai.self_x(), ai.self_y(), x, y)
+    return range if res == -1 else res
 
-"""
+def change_tracking(dir):
+    change_heading(angle_add(ai.self_track(), angle_diff(dir, ai.self_track())))
 
-#include "xpilot_ai.h"
-#include <string.h>
-#include <math.h>
+def change_heading(dir):
+    ai.self_turn(angle_diff(ai.self_heading(), dir))
 
-int wall_feeler(int range, int degree);
-int screen_enemy_num (int n);
-int radar_enemy_num (int n);
-int open_wall(int xdir, int dist);
-int change_tracking(int dir);
-int change_heading(int dir);
-void init_feeler_dirs(void);
+def screen_enemy_num(n):
+    if ai.ship_x(n) == -1:
+        return -1
+    elif ai.team_play() == 1 and ai.self_team() != ai.ship_team(n):
+        return n
+    else:
+        return screen_enemy_num(n + 1)
 
-int feeler_dirs[13];
+def radar_enemy_num(n):
+    if ai.radar_x(n) == -1:
+        return -1
+    elif ai.radar_enemy(n) == 1:
+        return n
+    else:
+        return radar_enemy_num(n + 1)
 
-int main (int argc, char **argv) {
-	init_feeler_dirs();
-	AI_setmaxturn (20);
-	AI_xpilot_setargs("-join slughorn.conncoll.edu -port 57489 -name SelX");
-	AI_xpilot_launch();
-	
-	return 1;
-}
+def angle_diff(angle1, angle2):
+    # Implement the angle difference calculation
+    pass
 
-void AImain(void) {
-	int shipnum = screen_enemy_num(0);
-	int rshipnum = radar_enemy_num(0);
-	
-	int wall_feeler1 = wall_feeler(500, feeler_dirs[1]);
-	int wall_feeler2 = wall_feeler(500, feeler_dirs[2]);
+def angle_add(angle1, angle2):
+    # Implement the angle addition calculation
+    pass
 
-	if (AIself_alive()) {
-		if ((AIshot_alert(0) > -1) && (AIshot_alert(0) < 80)) {
-			AIself_turn(anglediff(AIself_heading(), angleadd(AIshot_idir(0), 180)));
-			AIself_thrust(1);
-		} else if (AI_wallbetween(AIself_x(), AIself_y(), AIship_x(shipnum), AIship_y(shipnum)) != -1) {
-			change_heading(open_wall(AIship_xdir(shipnum), AIship_dist(shipnum)));
-			if (AIself_vel() < 6) AIself_thrust(1);
-		} else if ((AIship_xdir(shipnum) > -1) && (abs(anglediff(AIself_heading(), AIship_aimdir(shipnum))) < 5)) {
-			change_heading(AIship_aimdir(shipnum));
-			AIself_shoot(1);
-		} else if ((AIship_xdir(shipnum) > -1) && (abs(anglediff(AIself_heading(), AIship_aimdir(shipnum))) > 5)) {
-			change_heading(AIship_aimdir(shipnum));
-		} else if (abs(anglediff(AIradar_xdir(rshipnum), AIself_heading())) < 5) {
-			change_tracking(AIradar_xdir(rshipnum));
-			AIself_shoot(1);
-			if (!((abs(anglediff(AIself_track(), AIradar_xdir(rshipnum))) < 15) && (AIself_vel() < 7))) AIself_thrust(1);
-		} else if (!(AIradar_x(rshipnum) < 0)) {
-			AIself_turn(anglediff(AIself_heading(), AIradar_xdir(rshipnum)));
-		}
+def init_feeler_dirs():
+    global feeler_dirs
+    feeler_dirs = [0, 15, -15, 30, -30, 45, -45, 60, -60, 75, -75, 90, -90]
 
-		if ((wall_feeler1 == wall_feeler2) && (wall_feeler1 < (20 * AIself_vel())) && (AIself_vel() > 1)) {
-			AIself_turn(anglediff(AIself_heading(), angleadd(AIself_track(), 180)));
-		} else if ((wall_feeler1 < wall_feeler2) && (wall_feeler1 < (20 * AIself_vel())) && (AIself_vel() > 1)) {
-			AIself_turn(anglediff(AIself_heading(), angleadd(180, angleadd(-15, AIself_track()))));
-			if (anglediff(AIself_heading(), angleadd(180, angleadd(-15, AIself_track()))) < 30) AIself_thrust(1);
-		} else if ((wall_feeler1 > wall_feeler2) && (wall_feeler2 < (20 * AIself_vel())) && (AIself_vel() > 1)) {
-			AIself_turn(anglediff(AIself_heading(), angleadd(180, angleadd(15, AIself_track()))));
-			if (anglediff(AIself_heading(), angleadd(180, angleadd(15, AIself_track()))) < 30) AIself_thrust(1);
-		}
-	}
-	return;
-}
-
-int wall_feeler(int range, int degree) {
-	int res = AI_wallbetween(AIself_x(), AIself_y(), AIself_x() +  range * cos( rad (degree)), AIself_y() + range * sin(rad( degree)));
-	if (res == -1) 
-		return range;
-		return res;
-}
-
-int open_wall(int xdir, int dist) {
-	if ((xdir == -1) || (dist == -1))
-		return angleadd(AIself_track(), 180);
-	else {
-		int max = -1;
-		int i;
-		for (i = 0; i <= 12; i++) {
-			int w = wall_feeler(dist, angleadd(xdir, feeler_dirs[i]));
-			if (w == dist) return i;
-			else if (w > max) max = i;
-		}
-		return i;
-	}
-}
-
-int change_tracking(int dir) {
-	change_heading(angleadd(AIself_track(), anglediff(dir, AIself_track())));
-}
-
-int change_heading(int dir) {
-	AIself_turn(anglediff(AIself_heading(), dir));
-}
-
-int screen_enemy_num (int n) {
-	if (AIship_x(n) == -1) return -1;
-	else if (AI_teamplay() == 1 && AIself_team() != AIship_team(n)) return n;
-	else return screen_enemy_num(n + 1);
-}
-
-int radar_enemy_num (int n) {
-	if (AIradar_x(n) == -1) return -1;
-	else if (AIradar_enemy(n) == 1) return n;
-	else return radar_enemy_num(n + 1);
-}
-
-void init_feeler_dirs(void) {
-	feeler_dirs[0] = 0;
-	feeler_dirs[1] = 15;
-	feeler_dirs[2] = -15;
-	feeler_dirs[3] = 30;
-	feeler_dirs[4] = -30;
-	feeler_dirs[5] = 45;
-	feeler_dirs[6] = -45;
-	feeler_dirs[7] = 60;
-	feeler_dirs[8] = -60;
-	feeler_dirs[9] = 75;
-	feeler_dirs[10] = -75;
-	feeler_dirs[11] = 90;
-	feeler_dirs[12] = -90;
-}
-
-
-"""
-#################################################################
-#################################################################
-#################################################################
-
-
-
-
-
+'''
