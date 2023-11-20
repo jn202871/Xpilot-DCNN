@@ -30,7 +30,7 @@ print("Wandb run initialized")
 # Connect to SQLite database
 conn = sqlite3.connect('xpilot_data.db')
 cursor = conn.cursor()
-cursor.execute("SELECT frame, actions FROM frames LIMIT 4000")
+cursor.execute("SELECT frame, actions FROM frames LIMIT 1000")
 db_data = cursor.fetchall()
 conn.close()
 print("Connected to SQLite database and fetched data")
@@ -81,7 +81,7 @@ class DCNNClassifier(nn.Module):
         x = self.fc3(x)
         x = torch.relu(x)
         x = self.fc4(x)
-        #x = self.sigmoid(x)
+        x = self.sigmoid(x)
         #x = torch.squeeze(x)
         return x
 
@@ -129,9 +129,6 @@ for epoch in range(epochs):
     #wandb.log({"train_loss": loss.item(), "val_loss": avg_val_loss,"epoch": epoch})
 
 # Save Trained Model
-torch.save(model, "model.pt")
-#artifact = wandb.Artifact('model', type='model')
-#artifact.add_file("model.pt")
-#wandb.log_artifact(artifact)
+torch.save(model.state_dict(), "model.pt")
 #wandb.finish()
 print("Trained Model Saved")
