@@ -10,8 +10,8 @@ from torchvision.transforms import v2
 from PIL import Image
 
 # Hyperparameters
-alpha = 0.001
-epochs = 10
+alpha = 0.0001
+epochs = 20
 hiddenlayers = 3
 '''
 # Initialize wandb
@@ -30,7 +30,7 @@ print("Wandb run initialized")
 # Connect to SQLite database
 conn = sqlite3.connect('xpilot_data.db')
 cursor = conn.cursor()
-cursor.execute("SELECT frame, actions FROM frames LIMIT 1000")
+cursor.execute("SELECT frame, actions FROM frames LIMIT 50000")
 db_data = cursor.fetchall()
 conn.close()
 print("Connected to SQLite database and fetched data")
@@ -64,10 +64,10 @@ class DCNNClassifier(nn.Module):
     def __init__(self):
         super(DCNNClassifier, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=128, kernel_size=3, padding=1)
-        self.fc1 = nn.Linear(128*32*32,64)
-        self.fc2 = nn.Linear(64,64)
-        self.fc3 = nn.Linear(64,32)
-        self.fc4 = nn.Linear(32,4)
+        self.fc1 = nn.Linear(128*32*32,256)
+        self.fc2 = nn.Linear(256,256)
+        self.fc3 = nn.Linear(256,256)
+        self.fc4 = nn.Linear(256,4)
         self.sigmoid = nn.Sigmoid()
     
     def forward(self, x):
@@ -81,7 +81,7 @@ class DCNNClassifier(nn.Module):
         x = self.fc3(x)
         x = torch.relu(x)
         x = self.fc4(x)
-        x = self.sigmoid(x)
+        #x = self.sigmoid(x)
         #x = torch.squeeze(x)
         return x
 
