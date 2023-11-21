@@ -11,16 +11,18 @@ from PIL import Image
 
 # Hyperparameters
 alpha = 0.0001
-epochs = 20
-hiddenlayers = 3
+epochs = 10
+hiddenlayers = 4
+layerwidth = 512
 '''
 # Initialize wandb
 wandb.init(
     project="xpilot_cloning",
     config={
         "leanring rate": alpha,
-        "architecture": "DCNN",
-        "batch_size": 1,
+        "hiddenlayers": hiddenlayers,
+        "layerwidth": layerwidth,
+        "batch_size": 64,
         "epochs": epochs,
         "dataset_size": 50000
     }
@@ -30,7 +32,7 @@ print("Wandb run initialized")
 # Connect to SQLite database
 conn = sqlite3.connect('xpilot_data.db')
 cursor = conn.cursor()
-cursor.execute("SELECT frame, actions FROM frames LIMIT 50000")
+cursor.execute("SELECT frame, actions FROM frames LIMIT 150000")
 db_data = cursor.fetchall()
 conn.close()
 print("Connected to SQLite database and fetched data")
@@ -64,10 +66,10 @@ class DCNNClassifier(nn.Module):
     def __init__(self):
         super(DCNNClassifier, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=128, kernel_size=3, padding=1)
-        self.fc1 = nn.Linear(128*32*32,256)
-        self.fc2 = nn.Linear(256,256)
-        self.fc3 = nn.Linear(256,256)
-        self.fc4 = nn.Linear(256,4)
+        self.fc1 = nn.Linear(128*32*32,layerwidth)
+        self.fc2 = nn.Linear(layerwidth,layerwidth)
+        self.fc3 = nn.Linear(layerwidth,layerwidth)
+        self.fc4 = nn.Linear(layerwidth,4)
         self.sigmoid = nn.Sigmoid()
     
     def forward(self, x):
