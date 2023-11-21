@@ -13,7 +13,7 @@ from PIL import Image
 alpha = 0.00001
 epochs = 20
 hiddenlayers = 4
-layerwidth = 1024
+layerwidth = 1028
 '''
 # Initialize wandb
 wandb.init(
@@ -59,8 +59,8 @@ split_ratio = 0.8
 split_idx = int(len(dataset) * split_ratio)
 train_dataset, val_dataset = data.random_split(dataset, [split_idx, len(dataset) - split_idx])
 
-train_loader = data.DataLoader(train_dataset, batch_size=128, shuffle=True, pin_memory=True, num_workers=4)
-val_loader = data.DataLoader(val_dataset, batch_size=128, shuffle=False, pin_memory=True, num_workers=4)
+train_loader = data.DataLoader(train_dataset, batch_size=64, shuffle=True, pin_memory=True, num_workers=4)
+val_loader = data.DataLoader(val_dataset, batch_size=64, shuffle=False, pin_memory=True, num_workers=4)
 
 # Construct DCNN classifier
 class DCNNClassifier(nn.Module):
@@ -101,8 +101,8 @@ model = DCNNClassifier().to(device)
 
 # Setup Training
 criterion = nn.BCEWithLogitsLoss()
-optimizer = optim.AdamW(model.parameters(), lr=alpha)
-#scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
+optimizer = optim.Adam(model.parameters(), lr=alpha)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
 
 # Training Loop
 for epoch in range(epochs):
@@ -126,7 +126,7 @@ for epoch in range(epochs):
             val_outputs = model(inputs)
             #val_outputs = val_outputs.unsqueeze(0)
             val_loss = criterion(val_outputs, targets)
-            #scheduler.step(val_loss)
+            scheduler.step(val_loss)
             val_losses.append(val_loss.item())
     avg_val_loss = sum(val_losses) / len(val_losses)
     print(f"Epoch {epoch+1}/{epochs}, Training Loss: {loss.item()}, Validation Loss: {avg_val_loss}")
