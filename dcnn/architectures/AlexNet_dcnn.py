@@ -19,7 +19,7 @@ layerwidth = 1028
 wandb.init(
     project="xpilot_cloning",
     config={
-    	"architecture": "AALL",
+    	"architecture": "AlexNet",
         "leanring rate": alpha,
         "hiddenlayers": hiddenlayers,
         "layerwidth": layerwidth,
