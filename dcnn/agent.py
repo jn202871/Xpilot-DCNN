@@ -1,6 +1,7 @@
 # Jay Nash & Russell Kosovsky & Annika Hoag 2023 COM407
 # agent that reads the neural network from the .pt file to control the ship
 
+import numpy as np
 import libpyAI as ai
 import torch.nn as nn
 import torch
@@ -120,16 +121,16 @@ def AI_loop():
       
         #End of Get Frame
     
-        layerwidth = 1024
+        
         # Construct DCNN classifier
         class DCNNClassifier(nn.Module):
             def __init__(self):
                 super(DCNNClassifier, self).__init__()
                 self.conv1 = nn.Conv2d(in_channels=1, out_channels=128, kernel_size=3, padding=1)
-                self.fc1 = nn.Linear(128*32*32,layerwidth)
-                self.fc2 = nn.Linear(layerwidth,layerwidth)
-                self.fc3 = nn.Linear(layerwidth,layerwidth)
-                self.fc4 = nn.Linear(layerwidth,4)
+                self.fc1 = nn.Linear(128*32*32,64)
+                self.fc2 = nn.Linear(64,64)
+                self.fc3 = nn.Linear(64,32)
+                self.fc4 = nn.Linear(32,4)
                 self.sigmoid = nn.Sigmoid()
             
             def forward(self, x):
@@ -148,24 +149,43 @@ def AI_loop():
                 return x
     
         #Loading Model
-        print("I'm about to go into DCNNClassifier")
+        #print("I'm about to go into DCNNClassifier")
         model = DCNNClassifier()
         model.load_state_dict(torch.load('model.pt', map_location=torch.device('cpu')))
         model.eval()
-        print("I'm out of DCNNClassifier")
+        #print("I'm out of DCNNClassifier")
         
+        area = torch.tensor(area, dtype=torch.float32).view(-1,1,32,32)
         outputs = model(area)
         #End of Loading Model
         
+        sigmoid = nn.Sigmoid()
+        outputs = sigmoid(outputs)
+        
+        outputs = outputs.detach().numpy()
+        
         #Printing outputs
-        #torch.set_printoptions(precision=2)
-        torch.tensor(outputs)
+        print("Outputs: ", outputs)
+        #print(outputs[0][0])
+        #LEFT OFF: need to take values out of array and put into variabes; thrust, shoot, left, right
+        if outputs[0][0]>=0.5:
+            #print("test")
+            ai.thrust(1)
+        
+        if outputs[0][1]>=0.5:
+            ai.fireShot()
+        
+        if outputs[0][2]>=0.5:
+            ai.turnLeft(1)
+        
+        if outputs[0][3]>=0.5:
+            ai.turnRight(1)
         
         #Release keys
-        ai.thrust(0)
-        ai.turnLeft(0)
-        ai.turnRight(0)
-        ai.setPower(25)
+        #ai.thrust(0)
+        #ai.turnLeft(0)
+        #ai.turnRight(0)
+        #ai.setPower(25)
     
 
 ai.start(AI_loop,["-name","dcnn-agent","-join","localhost"])
