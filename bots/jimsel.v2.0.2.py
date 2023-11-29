@@ -138,6 +138,43 @@ def AI_loop():
         #ai.turn(angleDiff(heading, angleAdd(ai.shotVelDir(0), 180)))
         ai.thrust(1)
     
+    
+    ### need to convert functions
+    elif (AI_wallbetween(AIself_x(), AIself_y(), AIship_x(shipnum), AIship_y(shipnum)) != -1):
+
+        change_heading(open_wall(AIship_xdir(shipnum), AIship_dist(shipnum)))
+        if(AIself_vel() < 6):
+            AIself_thrust(1)
+		
+	
+    elif ((AIship_xdir(shipnum) > -1) and (abs(anglediff(AIself_heading(), AIship_aimdir(shipnum))) < 5)):
+
+        change_heading(AIship_aimdir(shipnum))
+        AIself_shoot(1)
+    
+    
+    elif ((AIship_xdir(shipnum) > -1) and (abs(anglediff(AIself_heading(), AIship_aimdir(shipnum))) > 5)):
+
+        change_heading(AIship_aimdir(shipnum))
+    
+    
+    elif (abs(anglediff(AIradar_xdir(rshipnum), AIself_heading())) < 5):
+
+        change_tracking(AIradar_xdir(rshipnum))
+        AIself_shoot(1)
+        
+        if not (((abs(anglediff(AIself_track(), AIradar_xdir(rshipnum))) < 15) and (AIself_vel() < 7))):
+            AIself_thrust(1)
+    
+    
+    elif not ((AIradar_x(rshipnum) < 0)):
+
+        AIself_turn(anglediff(AIself_heading(), AIradar_xdir(rshipnum)))
+
+    
+    
+    
+    #from jimsel
     ## find its equivalent in sel
     elif(ai.closestShipId() > -1 and abs(heading_to_enemy < 400)):
         
