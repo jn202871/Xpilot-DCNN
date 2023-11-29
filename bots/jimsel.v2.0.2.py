@@ -26,20 +26,7 @@ Russell Kosovsky
 import math 
 import libpyAI as ai
 
-FEELER_DIRS = []
-FEELER_DIRS.append(0)
-FEELER_DIRS.append(15)
-FEELER_DIRS.append(-15)
-FEELER_DIRS.append(30)
-FEELER_DIRS.append(-30)
-FEELER_DIRS.append(45)
-FEELER_DIRS.append(-45)
-FEELER_DIRS.append(60)
-FEELER_DIRS.append(-60)
-FEELER_DIRS.append(75)
-FEELER_DIRS.append(-75)
-FEELER_DIRS.append(90)
-FEELER_DIRS.append(-90)
+FEELER_DIRS = [0, 15, -15, 30, -30, 45, -45, 60, -60, 75, -75, 90, -90]
 
 
 def open_wall(xdir, dist):
@@ -55,23 +42,30 @@ def open_wall(xdir, dist):
                 max = i
         return i
 
+
+
 def AI_loop():
     
     print()
     print("--------------------------- START of frame ----------------------------")
     print("-----------------------------------------------------------------------")
     print("-----------------------------------------------------------------------")
+    
+    ## matches sel
     ai.thrust(0)
     ai.turnLeft(0)
     ai.turnRight(0)
     ai.setTurnSpeedDeg(20)
 
+    ## matches sel
     heading = int(ai.selfHeadingDeg())
     tracking = int(ai.selfTrackingDeg())
     
+    ## matches sel
     wf_1 = ai.wallFeeler(500, tracking + 15)
     wf_2 = ai.wallFeeler(500, tracking - 15)
 
+    
     enemy = ai.closestShipId()
 
     # ai.closestRadarX(): closest ships x coord (0-256) -1 if no ships on radar
@@ -79,9 +73,10 @@ def AI_loop():
     # ai.closestRadarY(): closest ships y coord (0-256) -1 if no ships on radar
     renemy_y = ai.closestRadarY()
 
-    # ???angle between enemy and self???
+    # angle between enemy and self???
     radar_angle = int(math.degrees(math.atan(abs(renemy_y)/abs(renemy_x + 0.00000001))))
 
+    
     heading_to_enemy = heading - ai.aimdir(0)
     heading_to_dodge = heading - ai.shotVelDir(0)
 
@@ -144,12 +139,14 @@ def AI_loop():
     print("-----------------------------------------------------------------------")
     print("first logic chunk")
     
+    ## matches sel
     if(ai.shotAlert(0) > -1 and ai.shotAlert(0) < 80):
         
         print("Dodging")
         ai.turn(heading_to_dodge)
         ai.thrust(1)
     
+    ## find its equivalent in sel
     elif(ai.closestShipId() > -1 and abs(heading_to_enemy < 400)):
         
         print("Shooting")
@@ -159,6 +156,7 @@ def AI_loop():
             ai.turnLeft(1)
         ai.fireShot()
 
+    ## find its equivalent in sel
     elif(ai.closestRadarX() > -1 and abs(radar_angle < 600)):
         
         print("Aiming")
@@ -175,6 +173,9 @@ def AI_loop():
     
     print("-----------------------------------------------------------------------")
     print("second logic chunk")
+    
+##
+
     if((wf_1 == wf_2) and (wf_1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
         
         print("Turning 1: ",heading - (180 + tracking))
