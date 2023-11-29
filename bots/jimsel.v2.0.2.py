@@ -27,9 +27,16 @@ import math
 import libpyAI as ai
 
 
-def init_feeler_dirs():
-    global FEELER_DIRS
-    FEELER_DIRS = [0, 15, -15, 30, -30, 45, -45, 60, -60, 75, -75, 90, -90]
+FEELER_DIRS = [0, 15, -15, 30, -30, 45, -45, 60, -60, 75, -75, 90, -90]
+
+
+def angleDiff(angle1, angle2):
+    left = angle2 - angle1
+    right = angle1 + 360 - angle2
+    return min(left, right, key=abs) % 360
+
+def angleAdd(angle1, angle2):
+    return (angle1 + angle2) % 360
 
 
 def open_wall(xdir, dist):
@@ -46,16 +53,15 @@ def open_wall(xdir, dist):
         return i
 
 
-def change_heading(dir, heading):
-	ai.turn(ai.ai.angleDiff(heading, dir))
+def change_heading(direc, heading):
+    ai.turnToDeg(angleDiff(heading, direc))
 
-def change_tracking(dir, tracking, heading):
-	change_heading(ai.ai.angleAdd(tracking, ai.ai.angleDiff(dir, tracking)), heading);
+def change_tracking(direc, tracking, heading):
+    change_heading(angleAdd(tracking, angleDiff(direc, tracking)), heading)
 
 
 def AI_loop():
     
-    print()
     print("--------------------------- START of frame ----------------------------")
     print("-----------------------------------------------------------------------")
     print("-----------------------------------------------------------------------")
@@ -130,11 +136,11 @@ def AI_loop():
     print("-----------------------------------------------------------------------")
     print("first logic chunk")
     
-    if(ai.shotAlert(0) != -1 and ai.shotAlert(0) < 80):
+    if ai.shotAlert(0) != -1 and ai.shotAlert(0) < 80:
         
         print("Dodging")
-        ai.turn(heading_to_dodge)
-        #ai.turn(ai.angleDiff(heading, ai.angleAdd(ai.shotVelDir(0), 180)))
+        ai.turnToDeg(heading_to_dodge)
+        #ai.turnToDeg(ai.angleDiff(heading, ai.angleAdd(ai.shotVelDir(0), 180)))
         ai.thrust(1)
     
 
@@ -145,50 +151,50 @@ def AI_loop():
             ai.thrust(1)
 
 
-    elif ((ai.enemyTrackingDeg(0) > -1) and (abs(ai.ai.angleDiff(heading, ai.enemyHeadingDeg(0))) < 5)):
+    elif ai.enemyTrackingDeg(0) > -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) < 5:
 
         change_heading(ai.enemyHeadingDeg(0), heading)
         ai.fireShot(1)
     
     
-    elif ((ai.enemyTrackingDeg(0) > -1) and (abs(ai.ai.angleDiff(heading, ai.enemyHeadingDeg(0))) > 5)):
+    elif ai.enemyTrackingDeg(0) > -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) > 5:
 
         change_heading(ai.enemyHeadingDeg(0), heading)
     
     
-    elif (abs(ai.ai.angleDiff(ai.enemyHeadingDeg(0), heading)) < 5):
+    elif abs(angleDiff(ai.enemyHeadingDeg(0), heading)) < 5:
 
         change_tracking(ai.enemyHeadingDeg(0), tracking, heading)
         ai.fireShot(1)
         
-        if not (((abs(ai.ai.angleDiff(tracking, ai.enemyHeadingDeg(0))) < 15) and (ai.selfSpeed() < 7))):
+        if (abs(angleDiff(tracking, ai.enemyHeadingDeg(0))) < 15) and (ai.selfSpeed() < 7):
             ai.thrust(1)
     
     
-    elif not ((ai.closestRadarX() <= 0)):
+    elif not ai.closestRadarX() < 0:
 
-        ai.turn(ai.ai.angleDiff(heading, ai.enemyHeadingDeg(0)))
+        ai.turnToDeg(angleDiff(heading, ai.enemyHeadingDeg(0)))
 
     
     print("-----------------------------------------------------------------------")
     print("second logic chunk")
 
 
-    if ((wf_1 == wf_2) and (wf_1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
-        ai.turn(ai.angleDiff(heading, ai.angleAdd(tracking, 180)))
+    if wf_1 == wf_2 and wf_1 < (20 * ai.selfSpeed()) and ai.selfSpeed() > 1:
+        ai.turnToDeg(angleDiff(heading, angleAdd(tracking, 180)))
 	
 
-    elif ((wf_1 < wf_2) and (wf_1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
-        ai.turn(ai.angleDiff(heading, ai.angleAdd(180, ai.angleAdd(-15, tracking))))
-        if (ai.angleDiff(heading, ai.angleAdd(180, ai.angleadd(-15, tracking))) < 30):
+    elif wf_1 < wf_2 and wf_1 < (20 * ai.selfSpeed()) and ai.selfSpeed() > 1:
+        ai.turnToDeg(angleDiff(heading, angleAdd(180, angleAdd(-15, tracking))))
+        if angleDiff(heading, angleAdd(180, angleAdd(-15, tracking))) < 30:
             ai.thrust(1)
 		
 
-    elif ((wf_1 > wf_2) and (wf_2 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
+    elif wf_1 > wf_2 and wf_2 < (20 * ai.selfSpeed()) and ai.selfSpeed() > 1:
         
-        ai.turn(ai.angleDiff(heading, ai.angleAdd(180, ai.angleadd(15, tracking))))
+        ai.turnToDeg(angleDiff(heading, angleAdd(180, angleAdd(15, tracking))))
 
-        if (ai.angleDiff(heading, ai.angleAdd(180, ai.angleadd(15, tracking))) < 30):
+        if angleDiff(heading, angleAdd(180, angleAdd(15, tracking))) < 30:
             ai.thrust(1)
 
 
