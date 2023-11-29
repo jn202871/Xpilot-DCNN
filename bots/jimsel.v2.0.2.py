@@ -1,4 +1,4 @@
-'''
+''' 
 Russell Kosovsky 
 
     An attempt to rewrite the cherished bot, "sel" from C to Python.
@@ -24,7 +24,7 @@ Russell Kosovsky
 '''
 
 import math 
-import libpyAI as ai 
+import libpyAI as ai
 
 FEELER_DIRS = []
 FEELER_DIRS.append(0)
