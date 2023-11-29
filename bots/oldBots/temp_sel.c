@@ -139,7 +139,6 @@ int change_heading(int dir) {
 
 
 
-// I think these two are both recursive
 int screen_enemy_num (int n) {
 	if (AIship_x(n) == -1) return -1;
 	else if (AI_teamplay() == 1 && AIself_team() != AIship_team(n)) return n;

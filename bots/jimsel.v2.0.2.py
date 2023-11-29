@@ -47,10 +47,10 @@ def open_wall(xdir, dist):
 
 
 def change_heading(dir, heading):
-	ai.turn(ai.angleDiff(heading, dir))
+	ai.turn(ai.ai.angleDiff(heading, dir))
 
 def change_tracking(dir, tracking, heading):
-	change_heading(ai.angleAdd(tracking, ai.angleDiff(dir, tracking)), heading);
+	change_heading(ai.ai.angleAdd(tracking, ai.ai.angleDiff(dir, tracking)), heading);
 
 
 def AI_loop():
@@ -82,7 +82,7 @@ def AI_loop():
     enemy_y = ai.closestRadarY()
 
     # angle between enemy and self???
-    radar_angle = int(math.degrees(math.atan(abs(renemy_y)/abs(renemy_x + 0.00000001))))
+    radar_angle = int(math.degrees(math.atan(abs(enemy_y)/abs(enemy_x + 0.00000001))))
 
     heading_to_enemy = heading - ai.aimdir(0)
     heading_to_dodge = heading - ai.shotVelDir(0)
@@ -104,7 +104,7 @@ def AI_loop():
 
     print("frame initialized")
 
-####################################################################################
+
 
     print("-----------------------------------------------------------------------")
     print("open_wall: ",open_wall(tracking, 100))
@@ -125,132 +125,75 @@ def AI_loop():
     print("radar angle: ", radar_angle)
     print("-----------------------------------------------------------------------")
 
-####################################################################################
+
 
     print("-----------------------------------------------------------------------")
     print("first logic chunk")
     
-    ### matches sel
-    
-    #if there is a bullet in buffer and it is cose
     if(ai.shotAlert(0) != -1 and ai.shotAlert(0) < 80):
         
         print("Dodging")
         ai.turn(heading_to_dodge)
-        #ai.turn(angleDiff(heading, angleAdd(ai.shotVelDir(0), 180)))
+        #ai.turn(ai.angleDiff(heading, ai.angleAdd(ai.shotVelDir(0), 180)))
         ai.thrust(1)
     
-    #else if there is a wall between us and the closest enemy
+
     elif ai.wallBetween(ai.selfX(), ai.selfY(), enemy_x, enemy_y) != -1:
 
         change_heading(open_wall(ai.enemyTrackingDeg(0), ai.enemyDistance(0)), heading)
         if(ai.selfSpeed() < 6):
             ai.thrust(1)
-		
-    
-#################################################################################################################
-######################################### Everything above is 1-to-1 with sel ####################################
-#################################################################################################################
 
 
-    ### this chunk is almost done
-    #  now just need AIradar_xdir() and AIradar_x()
-
-    elif ((ai.enemyTrackingDeg(0) > -1) and (abs(ai.angleDiff(heading, ai.enemyHeadingDeg(0))) < 5)):
+    elif ((ai.enemyTrackingDeg(0) > -1) and (abs(ai.ai.angleDiff(heading, ai.enemyHeadingDeg(0))) < 5)):
 
         change_heading(ai.enemyHeadingDeg(0), heading)
         ai.fireShot(1)
     
     
-    elif ((ai.enemyTrackingDeg(0) > -1) and (abs(ai.angleDiff(heading, ai.enemyHeadingDeg(0))) > 5)):
+    elif ((ai.enemyTrackingDeg(0) > -1) and (abs(ai.ai.angleDiff(heading, ai.enemyHeadingDeg(0))) > 5)):
 
         change_heading(ai.enemyHeadingDeg(0), heading)
     
     
-    elif (abs(ai.angleDiff(AIradar_xdir(0), heading)) < 5):
+    elif (abs(ai.ai.angleDiff(ai.enemyHeadingDeg(0), heading)) < 5):
 
-        change_tracking(AIradar_xdir(0), tracking, heading)
+        change_tracking(ai.enemyHeadingDeg(0), tracking, heading)
         ai.fireShot(1)
         
-        if not (((abs(ai.angleDiff(tracking, AIradar_xdir(0))) < 15) and (ai.selfSpeed() < 7))):
+        if not (((abs(ai.ai.angleDiff(tracking, ai.enemyHeadingDeg(0))) < 15) and (ai.selfSpeed() < 7))):
             ai.thrust(1)
     
     
-    elif not ((AIradar_x(0) < 0)):
+    elif not ((ai.closestRadarX() <= 0)):
 
-        ai.turn(ai.angleDiff(heading, AIradar_xdir(0)))
+        ai.turn(ai.ai.angleDiff(heading, ai.enemyHeadingDeg(0)))
 
-    
-    
-    
-    #from jimsel
-    ## find its equivalent in sel
-    elif(ai.closestShipId() > -1 and abs(heading_to_enemy < 400)):
-        
-        print("Shooting")
-        if(heading_to_enemy > 0):
-            ai.turnRight(1)
-        else:
-            ai.turnLeft(1)
-        ai.fireShot()
-
-    ## find its equivalent in sel
-    elif(ai.closestRadarX() > -1 and abs(radar_angle < 600)):
-        
-        print("Aiming")
-        ai.turn(radar_angle)
-        if (ai.selfSpeed() < 10):
-            ai.thrust(1)
-    
-    else:
-        print("outcome: nothing")
-
-    print("-----------------------------------------------------------------------")
-
-
-
-
-####################################################################################
     
     print("-----------------------------------------------------------------------")
     print("second logic chunk")
-    
-##
 
-    if((wf_1 == wf_2) and (wf_1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
+
+    if ((wf_1 == wf_2) and (wf_1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
+        ai.turn(ai.angleDiff(heading, ai.angleAdd(tracking, 180)))
+	
+
+    elif ((wf_1 < wf_2) and (wf_1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
+        ai.turn(ai.angleDiff(heading, ai.angleAdd(180, ai.angleAdd(-15, tracking))))
+        if (ai.angleDiff(heading, ai.angleAdd(180, ai.angleadd(-15, tracking))) < 30):
+            ai.thrust(1)
+		
+
+    elif ((wf_1 > wf_2) and (wf_2 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
         
-        print("Turning 1: ",heading - (180 + tracking))
-        ai.turnToDeg(heading - (180 + tracking))
-        #if(ai.selfSpeed() < 10):
-        ai.thrust(1)
-    
-    
-    elif((wf_1 < wf_2) and (wf_1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
-        
-        print("Turning 2: ",heading - (180 - 15 +tracking))
-        ai.turnToDeg(heading - (180 - 15 + tracking))
-        ai.turn(15)
-        #if(ai.selfSpeed() < 10):
-        ai.thrust(1)
-    
-    
-    elif((wf_1 > wf_2) and (wf_1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
-        
-        print("Turning 3: ",heading - (180 + 15 + tracking))
-        ai.turnToDeg(heading - (180 + 15 + tracking))
-        ai.turn(-15)
-        #if(ai.selfSpeed() < 10):
-        ai.thrust(1)
-    
-    else:
-        print("outcome: nothing")
+        ai.turn(ai.angleDiff(heading, ai.angleAdd(180, ai.angleadd(15, tracking))))
+
+        if (ai.angleDiff(heading, ai.angleAdd(180, ai.angleadd(15, tracking))) < 30):
+            ai.thrust(1)
+
 
     print("-----------------------------------------------------------------------")
-
-####################################################################################
-
     print("---------------------------- END of frame -----------------------------")
 
 
 ai.start(AI_loop,["-name","SelPy","-join","localhost"])
-
