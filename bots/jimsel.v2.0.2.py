@@ -68,11 +68,11 @@ def AI_loop():
     wf_1 = ai.wallFeeler(500, tracking + 15)
     wf_2 = ai.wallFeeler(500, tracking - 15)
 
-    
     enemy = ai.closestShipId()
 
     # ai.closestRadarX(): closest ships x coord (0-256) -1 if no ships on radar
     renemy_x = ai.closestRadarX()
+
     # ai.closestRadarY(): closest ships y coord (0-256) -1 if no ships on radar
     renemy_y = ai.closestRadarY()
 
@@ -83,18 +83,6 @@ def AI_loop():
     heading_to_enemy = heading - ai.aimdir(0)
     heading_to_dodge = heading - ai.shotVelDir(0)
 
-    # Other Wall Feelers
-    wf_t = ai.wallFeeler(500, tracking)
-    wf_p30 = ai.wallFeeler(500, tracking + 30)
-    wf_n30 = ai.wallFeeler(500, tracking - 30)
-    wf_p45 = ai.wallFeeler(500, tracking + 45)
-    wf_n45 = ai.wallFeeler(500, tracking - 45)
-    wf_p60 = ai.wallFeeler(500, tracking + 60)
-    wf_n60 = ai.wallFeeler(500, tracking - 60)
-    wf_p75 = ai.wallFeeler(500, tracking + 75)
-    wf_n75 = ai.wallFeeler(500, tracking - 75)
-    wf_p90 = ai.wallFeeler(500, tracking + 90)
-    wf_n90 = ai.wallFeeler(500, tracking - 90)
     
     # ai.selfRadarX(): Returns agents X radar coordinate. If the ship is hidden from the radar returns -1.
     renemy_x = renemy_x - ai.selfRadarX() # diff between enemy x cord and self x cord
@@ -147,6 +135,7 @@ def AI_loop():
         
         print("Dodging")
         ai.turn(heading_to_dodge)
+        #ai.turn(angleDiff(heading, angleAdd(ai.shotVelDir(0), 180)))
         ai.thrust(1)
     
     ## find its equivalent in sel
@@ -163,7 +152,7 @@ def AI_loop():
     elif(ai.closestRadarX() > -1 and abs(radar_angle < 600)):
         
         print("Aiming")
-        ai.turnToDeg(radar_angle)
+        ai.turn(radar_angle)
         if (ai.selfSpeed() < 10):
             ai.thrust(1)
     
