@@ -18,7 +18,7 @@ int main (int argc, char **argv) {
 	AI_xpilot_setargs("-join slughorn.conncoll.edu -port 57489 -name SelX");
 	AI_xpilot_launch();
 	
-	return 1;
+	return 1; 
 }
 
 void AImain(void) {

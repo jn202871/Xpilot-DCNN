@@ -26,7 +26,10 @@ Russell Kosovsky
 import math 
 import libpyAI as ai
 
-FEELER_DIRS = [0, 15, -15, 30, -30, 45, -45, 60, -60, 75, -75, 90, -90]
+
+def init_feeler_dirs():
+    global FEELER_DIRS
+    FEELER_DIRS = [0, 15, -15, 30, -30, 45, -45, 60, -60, 75, -75, 90, -90]
 
 
 def open_wall(xdir, dist):

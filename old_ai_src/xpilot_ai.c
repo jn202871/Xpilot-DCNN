@@ -4,7 +4,7 @@
 #include "AI.h"
 #include "xpilot_ai.h"
 #include "string.h"
-
+ 
 void AI_xpilot_setargs (char *s) { 
     int i;
     char *a;

@@ -102,7 +102,7 @@ void AImain(void) {
 		
 	}
 
-	return;
+	return; 
 
 }
 
@@ -137,6 +137,9 @@ int change_heading(int dir) {
 	AIself_turn(anglediff(AIself_heading(), dir));
 }
 
+
+
+// I think these two are both recursive
 int screen_enemy_num (int n) {
 	if (AIship_x(n) == -1) return -1;
 	else if (AI_teamplay() == 1 && AIself_team() != AIship_team(n)) return n;
@@ -148,6 +151,8 @@ int radar_enemy_num (int n) {
 	else if (AIradar_enemy(n) == 1) return n;
 	else return radar_enemy_num(n + 1);
 }
+//
+
 
 void init_feeler_dirs(void) {
 	feeler_dirs[0] = 0;
