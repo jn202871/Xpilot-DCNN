@@ -46,6 +46,12 @@ def open_wall(xdir, dist):
         return i
 
 
+def change_heading(dir, heading):
+	ai.turn(ai.angleDiff(heading, dir))
+
+def change_tracking(dir, tracking, heading):
+	change_heading(ai.angleAdd(tracking, ai.angleDiff(dir, tracking)), heading);
+
 
 def AI_loop():
     
@@ -71,24 +77,18 @@ def AI_loop():
     enemy = ai.closestShipId()
 
     # ai.closestRadarX(): closest ships x coord (0-256) -1 if no ships on radar
-    renemy_x = ai.closestRadarX()
-
+    enemy_x = ai.closestRadarX()
     # ai.closestRadarY(): closest ships y coord (0-256) -1 if no ships on radar
-    renemy_y = ai.closestRadarY()
+    enemy_y = ai.closestRadarY()
 
     # angle between enemy and self???
     radar_angle = int(math.degrees(math.atan(abs(renemy_y)/abs(renemy_x + 0.00000001))))
 
-    
     heading_to_enemy = heading - ai.aimdir(0)
     heading_to_dodge = heading - ai.shotVelDir(0)
 
-    
-    # ai.selfRadarX(): Returns agents X radar coordinate. If the ship is hidden from the radar returns -1.
-    renemy_x = renemy_x - ai.selfRadarX() # diff between enemy x cord and self x cord
-
-    # ai.selfRadarX(): Returns agents Y radar coordinate. If the ship is hidden from the radar returns -1.
-    renemy_y = renemy_y - ai.selfRadarY() # diff between enemy y cord and self y cord
+    renemy_x = enemy_x - ai.selfRadarX() # diff between enemy x cord and self x cord
+    renemy_y = enemy_y - ai.selfRadarY() # diff between enemy y cord and self y cord
 
     # if x coord diff is negative and y coord diff is positive
     if renemy_x < 0 and renemy_y > 0:
@@ -130,46 +130,55 @@ def AI_loop():
     print("-----------------------------------------------------------------------")
     print("first logic chunk")
     
-    ## matches sel
-    if(ai.shotAlert(0) > -1 and ai.shotAlert(0) < 80):
+    ### matches sel
+    
+    #if there is a bullet in buffer and it is cose
+    if(ai.shotAlert(0) != -1 and ai.shotAlert(0) < 80):
         
         print("Dodging")
         ai.turn(heading_to_dodge)
         #ai.turn(angleDiff(heading, angleAdd(ai.shotVelDir(0), 180)))
         ai.thrust(1)
     
-    
-    ### need to convert functions
-    elif (AI_wallbetween(AIself_x(), AIself_y(), AIship_x(shipnum), AIship_y(shipnum)) != -1):
+    #else if there is a wall between us and the closest enemy
+    elif ai.wallBetween(ai.selfX(), ai.selfY(), enemy_x, enemy_y) != -1:
 
-        change_heading(open_wall(AIship_xdir(shipnum), AIship_dist(shipnum)))
-        if(AIself_vel() < 6):
-            AIself_thrust(1)
+        change_heading(open_wall(ai.enemyTrackingDeg(0), ai.enemyDistance(0)), heading)
+        if(ai.selfSpeed() < 6):
+            ai.thrust(1)
 		
-	
-    elif ((AIship_xdir(shipnum) > -1) and (abs(anglediff(AIself_heading(), AIship_aimdir(shipnum))) < 5)):
+    
+#################################################################################################################
+######################################### Everything above is 1-to-1 with sel ####################################
+#################################################################################################################
 
-        change_heading(AIship_aimdir(shipnum))
-        AIself_shoot(1)
-    
-    
-    elif ((AIship_xdir(shipnum) > -1) and (abs(anglediff(AIself_heading(), AIship_aimdir(shipnum))) > 5)):
 
-        change_heading(AIship_aimdir(shipnum))
-    
-    
-    elif (abs(anglediff(AIradar_xdir(rshipnum), AIself_heading())) < 5):
+    ### this chunk is almost done
+    #  now just need AIradar_xdir() and AIradar_x()
 
-        change_tracking(AIradar_xdir(rshipnum))
-        AIself_shoot(1)
+    elif ((ai.enemyTrackingDeg(0) > -1) and (abs(ai.angleDiff(heading, ai.enemyHeadingDeg(0))) < 5)):
+
+        change_heading(ai.enemyHeadingDeg(0), heading)
+        ai.fireShot(1)
+    
+    
+    elif ((ai.enemyTrackingDeg(0) > -1) and (abs(ai.angleDiff(heading, ai.enemyHeadingDeg(0))) > 5)):
+
+        change_heading(ai.enemyHeadingDeg(0), heading)
+    
+    
+    elif (abs(ai.angleDiff(AIradar_xdir(0), heading)) < 5):
+
+        change_tracking(AIradar_xdir(0), tracking, heading)
+        ai.fireShot(1)
         
-        if not (((abs(anglediff(AIself_track(), AIradar_xdir(rshipnum))) < 15) and (AIself_vel() < 7))):
-            AIself_thrust(1)
+        if not (((abs(ai.angleDiff(tracking, AIradar_xdir(0))) < 15) and (ai.selfSpeed() < 7))):
+            ai.thrust(1)
     
     
-    elif not ((AIradar_x(rshipnum) < 0)):
+    elif not ((AIradar_x(0) < 0)):
 
-        AIself_turn(anglediff(AIself_heading(), AIradar_xdir(rshipnum)))
+        ai.turn(ai.angleDiff(heading, AIradar_xdir(0)))
 
     
     
@@ -197,6 +206,9 @@ def AI_loop():
         print("outcome: nothing")
 
     print("-----------------------------------------------------------------------")
+
+
+
 
 ####################################################################################
     
