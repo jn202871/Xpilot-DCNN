@@ -26,7 +26,7 @@
         anglediff()
     
     int change_heading(int dir);
-	    AIself_turn()
+	AIself_turn()
         AIself_heading()
 
     int radar_enemy_num (int n);

@@ -29,6 +29,25 @@ import libpyAI as ai
 
 FEELER_DIRS = [0, 15, -15, 30, -30, 45, -45, 60, -60, 75, -75, 90, -90]
 
+    #wf_1 = ai.wallFeeler(500, tracking + 15)
+    #wf_2 = ai.wallFeeler(500, tracking - 15)
+
+#frontWall = ai.wallFeeler(1000,heading)
+#frontWallL = ai.wallFeeler(1000,heading+10)
+#frontWallR = ai.wallFeeler(1000,heading-10)
+
+#leftWall = ai.wallFeeler(1000,heading+90)
+#leftWallL = ai.wallFeeler(1000,heading+100)
+#leftWallR = ai.wallFeeler(1000,heading+80)
+
+#rightWall = ai.wallFeeler(1000,heading+270)
+#rightWallL = ai.wallFeeler(1000,heading+280)
+#rightWallR = ai.wallFeeler(1000,heading+260)
+
+#backWall = ai.wallFeeler (1000,heading+180)
+#backWallL = ai.wallFeeler(1000,heading+190)
+#backWallR = ai.wallFeeler(1000,heading+170)
+
 
 def angleDiff(angle1, angle2):
     left = angle2 - angle1
@@ -38,6 +57,12 @@ def angleDiff(angle1, angle2):
 def angleAdd(angle1, angle2):
     return (angle1 + angle2) % 360
 
+def angleReduce(angle):
+    angle = angle%360
+    if (angle < 0):
+        angle += 360
+    print(angle)
+    return angle
 
 def open_wall(xdir, dist):
     if(xdir == -1 or dist == -1):
@@ -46,7 +71,8 @@ def open_wall(xdir, dist):
     else:
         max = -1
         for i in range(12):
-            w = ai.wallFeeler(dist, xdir + FEELER_DIRS[i])
+            #w = ai.wallFeeler(1000, angleReduce(xdir + FEELER_DIRS[i]))
+            w = ai.wallFeeler(1000, xdir+FEELER_DIRS[i])
             #w = ai.wallFeeler(dist, xdir)
             if w == dist:
                 print("open_wall: ", i)
@@ -55,6 +81,7 @@ def open_wall(xdir, dist):
                 max = i
         print("open_wall: ", i)
         return i
+        
 
 
 def change_heading(direc, heading):
@@ -72,38 +99,53 @@ def change_tracking(direc, tracking, heading):
 def AI_loop():
     
     print("--------------------------- START of frame ----------------------------")
-    print("-----------------------------------------------------------------------")
-    #print("-----------------------------------------------------------------------")
     
     ## matches sel
     ai.thrust(0)
     ai.turnLeft(0)
     ai.turnRight(0)
     ai.setTurnSpeed(20)
+    ai.setPower(20)
 
     ## matches sel
     heading = int(ai.selfHeadingDeg())
     tracking = int(ai.selfTrackingDeg())
     
+    print(heading)
+    print(tracking)
+    
     ## matches sel
-    wf_1 = ai.wallFeeler(500, tracking + 15)
-    wf_2 = ai.wallFeeler(500, tracking - 15)
+    wf_1 = ai.wallFeeler(1000, tracking + 15)
+    wf_2 = ai.wallFeeler(1000, tracking - 15)
+    
+    print("wall feeler 1", wf_1)
+    print("wall feeler 2", wf_2)
 
     enemy = ai.closestShipId()
+    
+    print("closest ships id:", enemy)
 
     # ai.closestRadarX(): closest ships x coord (0-256) -1 if no ships on radar
     enemy_x = ai.closestRadarX()
     # ai.closestRadarY(): closest ships y coord (0-256) -1 if no ships on radar
     enemy_y = ai.closestRadarY()
+    
+    print("closest radar ship X coord:", enemy_x)
+    print("closest radar ship Y coord:", enemy_y)
 
     # angle between enemy and self???
     radar_angle = int(math.degrees(math.atan(abs(enemy_y)/abs(enemy_x + 0.00000001))))
+    print("radar_angle:", radar_angle)
 
-    heading_to_enemy = heading - ai.aimdir(0)
-    heading_to_dodge = heading - ai.shotVelDir(0)
+    heading_to_enemy = angleReduce(heading - ai.aimdir(0))
+    heading_to_dodge = angleReduce(heading - ai.shotVelDir(0))
+    print("heading_to_enemy:", heading_to_enemy)
+    print("heading_to_dodge:", heading_to_dodge)
 
     renemy_x = enemy_x - ai.selfRadarX() # diff between enemy x cord and self x cord
     renemy_y = enemy_y - ai.selfRadarY() # diff between enemy y cord and self y cord
+    print("renemy_x: diff between enemy x and self x", renemy_x)
+    print("renemy_y: diff between enemy y and self y", renemy_y)
 
     # if x coord diff is negative and y coord diff is positive
     if renemy_x < 0 and renemy_y > 0:
@@ -116,12 +158,12 @@ def AI_loop():
     # if x coord diff is positive and y coord diff is negative
     elif renemy_x > 0 and renemy_y < 0:
         radar_angle = 360 - radar_angle
+        
+    print(radar_angle)
 
-    print("frame initialized")
+    print("frame initialized ---------------------------------------------------")
 
 
-
-    print("-----------------------------------------------------------------------")
     #print("open_wall: ",open_wall(tracking, 100))
 
     #print("wf_1: ", wf_1)
@@ -142,8 +184,8 @@ def AI_loop():
 
 
 
-    print("-----------------------------------------------------------------------")
-    print("first logic chunk")
+
+    print("first logic chunk ---------------------------------------------------")
     
     if ai.shotAlert(0) > -1 and ai.shotAlert(0) < 80:
         
@@ -159,7 +201,8 @@ def AI_loop():
 
         id = ai.closestShipId()
         print("id: ", id)
-        change_heading(open_wall(ai.enemyTrackingDeg(0), ai.enemyDistanceId(id)), heading)
+        #change_heading(open_wall(ai.enemyTrackingDeg(0), ai.enemyDistanceId(id)), heading)
+        change_heading(open_wall(heading, ai.enemyDistanceId(id)), heading)
         
         if(ai.selfSpeed() < 6):
             ai.thrust(1)
@@ -195,9 +238,8 @@ def AI_loop():
         ai.turnToDeg(int(deg))
         #ai.turnToDeg(angleDiff(heading, ai.enemyHeadingDeg(0)))
 
-    
-    print("-----------------------------------------------------------------------")
-    print("second logic chunk")
+
+    print("second logic chunk ---------------------------------------------------")
 
 
     if wf_1 == wf_2 and wf_1 < (20 * ai.selfSpeed()) and ai.selfSpeed() > 1:
@@ -225,7 +267,6 @@ def AI_loop():
             ai.thrust(1)
 
 
-    print("-----------------------------------------------------------------------")
     print("---------------------------- END of frame -----------------------------")
 
 
