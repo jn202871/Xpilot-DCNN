@@ -81,13 +81,13 @@ def angleDiff(a1: float, a2: float) -> float:
     return comp_diff
 
 def angleAdd(angle1, angle2):
-    return (angle1 + angle2) % 360
+    return (angle1 + angle2 + 360) % 360
 
 def angleReduce(angle):
-    angle = angle%360
+    angle = angle % 360
     if (angle < 0):
         angle += 360
-    print(angle)
+    #print(angle)
     return angle
 
 def open_wall(xdir, dist):
