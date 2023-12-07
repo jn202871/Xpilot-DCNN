@@ -512,6 +512,6 @@ class bot(object):
 
 if __name__ == "__main__":
     test = bot("EKKO")
-    ai.headlessMode()
-    ai.start(test.run_loop, ["-name", test.username, "-join", "localhost"])
+    #ai.headlessMode()
+    ai.start(test.run_loop, ["-name", test.username])
     print("Bot stopped")

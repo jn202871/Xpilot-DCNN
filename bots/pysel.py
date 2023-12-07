@@ -48,11 +48,37 @@ FEELER_DIRS = [0, 15, -15, 30, -30, 45, -45, 60, -60, 75, -75, 90, -90]
 #backWallL = ai.wallFeeler(1000,heading+190)
 #backWallR = ai.wallFeeler(1000,heading+170)
 
+def turn_to_degree(heading, degree: float) -> None:
+        '''turn_to_degree Turns the bot to the desired heading
 
-def angleDiff(angle1, angle2):
-    left = angle2 - angle1
-    right = angle1 + 360 - angle2
-    return min(left, right, key=abs) % 360
+        Args:
+            degree (float): Heading to turn to
+        '''
+        delta = angleDiff(heading, degree)
+        if abs(delta) > 20:
+            if delta < 0:
+                ai.turnRight(1)
+            else:
+                ai.turnLeft(1)
+        #else:
+        #    turn_to_degree(heading, int(degree))
+
+
+def angleDiff(a1: float, a2: float) -> float:
+    '''angle_diff Finds the difference between two angles
+
+    Args:
+        a1 (float): angle 1
+        a2 (float): angle 2
+
+    Returns:
+        float: result of the difference between the two angles
+    '''        
+    diff = a2 - a1
+    comp_diff = a2 + 360 - a1
+    if abs(diff) < abs(comp_diff):
+        return diff
+    return comp_diff
 
 def angleAdd(angle1, angle2):
     return (angle1 + angle2) % 360
@@ -85,12 +111,12 @@ def open_wall(xdir, dist):
 
 
 def change_heading(direc, heading):
-    if (direc < 0):
-        direc += 360
+    #if (direc < 0):
+    #    direc += 360
 
     #deg = angleDiff(heading, direc)
-    #ai.turnToDeg(int(deg))
-    ai.turnToDeg(int(angleDiff(heading, direc)))
+    #turn_to_degree(int(deg))
+    turn_to_degree(heading, int(angleDiff(heading, direc)))
 
 def change_tracking(direc, tracking, heading):
     change_heading(angleAdd(tracking, angleDiff(direc, tracking)), heading)
@@ -190,8 +216,8 @@ def AI_loop():
     if ai.shotAlert(0) > -1 and ai.shotAlert(0) < 80:
         
         print("1")
-        ai.turnToDeg(int(heading_to_dodge))
-        #ai.turnToDeg(ai.angleDiff(heading, ai.angleAdd(ai.shotVelDir(0), 180)))
+        turn_to_degree(heading, heading_to_dodge)
+        #turn_to_degree(ai.angleDiff(heading, ai.angleAdd(ai.shotVelDir(0), 180)))
         ai.thrust(1)
     
 
@@ -235,8 +261,8 @@ def AI_loop():
 
         print("6")
         deg = angleDiff(heading,  ai.enemyHeadingDeg(0))
-        ai.turnToDeg(int(deg))
-        #ai.turnToDeg(angleDiff(heading, ai.enemyHeadingDeg(0)))
+        turn_to_degree(heading, deg)
+        #turn_to_degree(angleDiff(heading, ai.enemyHeadingDeg(0)))
 
 
     print("second logic chunk ---------------------------------------------------")
@@ -246,14 +272,14 @@ def AI_loop():
 
         print("1")
         deg = angleDiff(heading, angleAdd(tracking, 180))
-        ai.turnToDeg(int(deg))
-        #ai.turnToDeg(angleDiff(heading, angleAdd(tracking, 180)))
+        turn_to_degree(heading, int(deg))
+        #turn_to_degree(angleDiff(heading, angleAdd(tracking, 180)))
 	
 
     elif wf_1 < wf_2 and wf_1 < (20 * ai.selfSpeed()) and ai.selfSpeed() > 1:
         
         print("2")
-        ai.turnToDeg(int(angleDiff(heading, angleAdd(180, angleAdd(-15, tracking)))))
+        turn_to_degree(heading, int(angleDiff(heading, angleAdd(180, angleAdd(-15, tracking)))))
         if angleDiff(heading, angleAdd(180, angleAdd(-15, tracking))) < 30:
             ai.thrust(1)
 		
@@ -261,7 +287,7 @@ def AI_loop():
     elif wf_1 > wf_2 and wf_2 < (20 * ai.selfSpeed()) and ai.selfSpeed() > 1:
         
         print("3")
-        ai.turnToDeg(int(angleDiff(heading, angleAdd(180, angleAdd(15, tracking)))))
+        turn_to_degree(heading, int(angleDiff(heading, angleAdd(180, angleAdd(15, tracking)))))
 
         if angleDiff(heading, angleAdd(180, angleAdd(15, tracking))) < 30:
             ai.thrust(1)
