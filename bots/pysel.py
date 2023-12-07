@@ -1,5 +1,5 @@
 ''' 
-Russell Kosovsky 
+Russell Kosovsky
 
     An attempt to rewrite the cherished bot, "sel" from C to Python.
 
