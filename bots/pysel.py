@@ -227,7 +227,7 @@ def AI_loop():
     # OG:
     print(ai.wallBetween(ai.selfX(), ai.selfY(), enemy_x, enemy_y) > -1)
     # IMPROVED:
-    print(ai.wallBetween(ai.selfX(), ai.selfY(), ai.screenEnemyX(0), ai.screenEnemyY(0)) > -1)
+    print(ai.wallBetween(ai.selfX(), ai.selfY(), ai.screenEnemyX(0), ai.screenEnemyY(0)) != -1)
 
 ########################################################################################
 
@@ -236,9 +236,15 @@ def AI_loop():
     # ai.enemyTrackingDeg(0) > -1 
     # and 
     # abs(angleDiff(heading, ai.enemyHeadingDeg(0))) < 5
+
+    print(angleDiff(heading, ai.enemyHeadingDeg(0)))
+    print(abs(angleDiff(heading, ai.enemyHeadingDeg(0))))
+
     
     # OG:
     print(ai.enemyTrackingDeg(0) > -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) < 5)
+    # IMPROVED:
+    print(ai.enemyTrackingDeg(0) != -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) < 5)
 
 ########################################################################################
 
@@ -250,6 +256,8 @@ def AI_loop():
     
     # OG:
     print(ai.enemyTrackingDeg(0) > -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) > 5)
+    # IMPROVED:
+    print(ai.enemyTrackingDeg(0) != -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) > 5)
 
 ########################################################################################
 
@@ -257,6 +265,10 @@ def AI_loop():
 
     # abs(angleDiff(ai.enemyHeadingDeg(0), heading)) < 5
     
+    print(ai.enemyHeadingDeg(0))
+    print(heading)
+    print(abs(angleDiff(ai.enemyHeadingDeg(0), heading)))
+
     # OG:    
     print(abs(angleDiff(ai.enemyHeadingDeg(0), heading)) < 5)
 
@@ -275,20 +287,22 @@ def AI_loop():
     print(ai.closestRadarX() != -1)
 
 
-
-
 ########################################################################################
 ########################################################################################
 
     print("\n--------- 1 ---------")
-    print("\n--------- 2 ---------")
-    print("\n--------- 3 ---------")
 
+    print("\n--------- 2 ---------")
+
+    print("\n--------- 3 ---------")
+    
+########################################################################################
+########################################################################################
 
 
     print("\nfirst logic chunk ---------------------------------------------------")
     
-    if ai.shotAlert(0) > -1 and ai.shotAlert(0) < 80:
+    if ai.shotAlert(0) != -1 and ai.shotAlert(0) <= 80:
         print("\n--------- 1 --------- shot alert\n")
 
         turn_to_degree(heading, heading_to_dodge)
@@ -296,7 +310,7 @@ def AI_loop():
         ai.thrust(1)
     
 
-    elif ai.wallBetween(ai.selfX(), ai.selfY(), enemy_x, enemy_y) > -1:
+    elif ai.wallBetween(ai.selfX(), ai.selfY(), ai.screenEnemyX(0), ai.screenEnemyY(0)) != -1:
         print("\n--------- 2 --------- wall between self and enemy\n")
 
         id = ai.closestShipId()
@@ -326,14 +340,14 @@ def AI_loop():
             ai.thrust(1)
 
 
-    elif ai.enemyTrackingDeg(0) > -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) < 5:
+    elif ai.enemyTrackingDeg(0) != -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) < 5:
         print("\n--------- 3 ---------\n")
 
         change_heading(ai.enemyHeadingDeg(0), heading)
         ai.fireShot()
     
     
-    elif ai.enemyTrackingDeg(0) > -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) > 5:
+    elif ai.enemyTrackingDeg(0) != -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) > 5:
         print("\n--------- 4 ---------\n")
         
         change_heading(ai.enemyHeadingDeg(0), heading)
@@ -355,6 +369,7 @@ def AI_loop():
         deg = angleDiff(heading,  ai.enemyHeadingDeg(0))
         
         turn_to_degree(heading, deg)
+
 
 
     print("\n\nsecond logic chunk ---------------------------------------------------")
