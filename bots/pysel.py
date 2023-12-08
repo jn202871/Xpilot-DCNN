@@ -181,55 +181,97 @@ def AI_loop():
     #print("radar angle: ", radar_angle)
     #print("-----------------------------------------------------------------------")
 
+
+########################################################################################
+########################################################################################
+# LOGIC CHUNKS
+# 
+
     print("\n--------- 1 --------- shot alert")
 
-    #ai.shotAlert(0) > -1 
-    #and
-    #ai.shotAlert(0) < 80
-    
+    # ai.shotAlert(0) > -1 
+    # and
+    # ai.shotAlert(0) < 80
+
+#    int shotAlert(int idx) 
+#        - Returns a danger rating of a shot, the smaller the 
+#          number the more likely the shot is to hit the ship.
+#        - will return -1 if the buffer has no shot at the given index.  
+
+    # OG:
     print(ai.shotAlert(0) > -1 and ai.shotAlert(0) < 80)
+    # IMPROVED:
+    print(ai.shotAlert(0) != -1 and ai.shotAlert(0) <= 80)
 
 ########################################################################################
     
     print("\n--------- 2 --------- wall between self and enemy")
 
-    #ai.wallBetween(ai.selfX(), ai.selfY(), enemy_x, enemy_y) > -1
+    # ai.wallBetween(ai.selfX(), ai.selfY(), enemy_x, enemy_y) > -1
+    
+#    int wallBetween(int x1, int y1, int x2, int y2) 
+#       - If there is a wall between the given points it returns the distance from point 1 to the first found wall.  
+#       - If no wall is found it returns -1.
+    
+    print(ai.selfX()) # Returns the ship's X position on the map.
+    print(ai.selfY()) # Returns the ship's Y position on the map.
+
+    # Ships are sorted from near (nearest at index 0) to far.  
+    # Only ships that are on screen should be accessible.
+
+    print(ai.screenEnemyX(0)) # Returns the specified enemy's X coordinate on the map. else -1
+    print(ai.screenEnemyY(0)) # Returns the specified enemy's Y coordinate on the map. else -1
+
+
+    
+    # OG:
     print(ai.wallBetween(ai.selfX(), ai.selfY(), enemy_x, enemy_y) > -1)
+    # IMPROVED:
+    print(ai.wallBetween(ai.selfX(), ai.selfY(), ai.screenEnemyX(0), ai.screenEnemyY(0)) > -1)
 
 ########################################################################################
 
     print("\n--------- 3 ---------")
 
-    #ai.enemyTrackingDeg(0) > -1 
-    #and 
-    #abs(angleDiff(heading, ai.enemyHeadingDeg(0))) < 5
+    # ai.enemyTrackingDeg(0) > -1 
+    # and 
+    # abs(angleDiff(heading, ai.enemyHeadingDeg(0))) < 5
+    
+    # OG:
     print(ai.enemyTrackingDeg(0) > -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) < 5)
 
 ########################################################################################
 
     print("\n--------- 4 ---------")
 
-    #ai.enemyTrackingDeg(0) > -1 
-    #and 
-    #abs(angleDiff(heading, ai.enemyHeadingDeg(0))) > 5
+    # ai.enemyTrackingDeg(0) > -1 
+    # and 
+    # abs(angleDiff(heading, ai.enemyHeadingDeg(0))) > 5
+    
+    # OG:
     print(ai.enemyTrackingDeg(0) > -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) > 5)
 
 ########################################################################################
 
     print("\n--------- 5 ---------")
 
-    #abs(angleDiff(ai.enemyHeadingDeg(0), heading)) < 5
+    # abs(angleDiff(ai.enemyHeadingDeg(0), heading)) < 5
+    
+    # OG:    
     print(abs(angleDiff(ai.enemyHeadingDeg(0), heading)) < 5)
 
 ########################################################################################
 
-    print("\n--------- 6 ---------")
-    #ai.closestRadarX() != -1
+    print("\n--------- 6 ---------")  ## IMPROVED BUT STILL EQUIVALENT
+    # not ai.closestRadarX() > 0
     
 #    int closestRadarX() 
 #        - Returns the closest ship's X radar coordinate. 
 #          (0-256)  Returns -1 if there are no ships on the radar.
 
+    # OG:
+    print(not ai.closestRadarX() > 0)
+    # IMPROVED:
     print(ai.closestRadarX() != -1)
 
 
@@ -336,7 +378,7 @@ def AI_loop():
 
     elif wf_1 > wf_2 and wf_2 < (20 * ai.selfSpeed()) and ai.selfSpeed() > 1:
         print("\n--------- 3 ---------\n")
-        
+
         turn_to_degree(heading, angleDiff(heading, angleAdd(180, angleAdd(15, tracking))))
 
         if angleDiff(heading, angleAdd(180, angleAdd(15, tracking))) < 30:
