@@ -56,9 +56,10 @@ def angleReduce(angle):
 
 def open_wall(xdir, dist):
     print("\n\nENTERED OPEN WALL")
-    if(xdir == -1.0 or dist == 9999.0):
-        #print("open_wall: ", ai.selfTrackingDeg())
-        return ai.selfTrackingDeg()
+    
+    if(xdir == -1.0 and dist == 9999.0):
+        return angleAdd(ai.selfTrackingDeg(), 180)
+    
     else:
         max = -1
         for i in range(12):
@@ -66,27 +67,24 @@ def open_wall(xdir, dist):
             print("xdir: ", xdir)
             print("FEELER_DIRS[i]: ", FEELER_DIRS[i])
         
-            
             feeler_angl = angleAdd(xdir, FEELER_DIRS[i])
             print("feeler_angl: ", feeler_angl)
-
             print("dist", dist)
             
-            w = ai.wallFeeler(int(dist), int(feeler_angl))
+            w = wall_feeler(int(dist), int(feeler_angl))
             
             if w == dist:
-                #print("open_wall: ", i)
                 return FEELER_DIRS[i]
+                #return i
             elif w > max:
+                #max = i
                 max = FEELER_DIRS[i]
-        
-        #print("open_wall: ", i)
+        #return i
         return FEELER_DIRS[i]
         
 
 
 def change_heading(direc, heading):
-
     turn_to_degree(heading, int(angleDiff(heading, direc)))
 
 
@@ -94,6 +92,14 @@ def change_tracking(direc, tracking, heading):
     change_heading(angleAdd(tracking, angleDiff(direc, tracking)), heading)
 
 
+def wall_feeler(Range, degree):
+    
+    res = ai.wallBetween(ai.selfX(), ai.selfY(), int(ai.selfX() + Range * math.cos(math.radians(degree))), int(ai.selfY() + Range * math.sin(math.radians(degree))))
+	
+    if res == -1: 
+        return Range
+    else:
+        return res
 
 
 
@@ -115,86 +121,15 @@ def AI_loop():
     tracking = int(ai.selfTrackingDeg())
     
     ## matches sel
-    wf_1 = ai.wallFeeler(1000, tracking + 15)
-    wf_2 = ai.wallFeeler(1000, tracking - 15)
-    
+    #wf_1 = ai.wallFeeler(1000, tracking + 15)
+    #wf_2 = ai.wallFeeler(1000, tracking - 15)
+
+    wf_1 = wall_feeler(1000, 15)
+    wf_2 = wall_feeler(1000, -15)
+
+    enemy_id = ai.closestShipId() 
+
     print("frame initialized ---------------------------------------------------")
-
-
-    print("\n--------- 3 ---------")
-
-    # ai.enemyTrackingDeg(0) > -1 
-    # and 
-    # abs(angleDiff(heading, ai.enemyHeadingDeg(0))) < 5
-
-    print("enemy trackinf deg (idx)", ai.enemyTrackingDeg(0))
-
-    print("heading", heading)
-    print("andle diff between headin and enmy head deg",angleDiff(heading, ai.enemyHeadingDeg(0)))
-    print("absolute value offit:", abs(angleDiff(heading, ai.enemyHeadingDeg(0))))
-
-    
-    # OG:
-    print(ai.enemyTrackingDeg(0) > -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) < 5)
-    # IMPROVED:
-    print(ai.enemyTrackingDeg(0) != -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) < 5)
-
-########################################################################################
-
-    print("\n--------- 4 ---------")
-
-    # ai.enemyTrackingDeg(0) > -1 
-    # and 
-    # abs(angleDiff(heading, ai.enemyHeadingDeg(0))) > 5
-    
-
-    print("enemy trackinf deg (idx)", ai.enemyTrackingDeg(0))
-
-    print("heading", heading)
-    print("andle diff between headin and enmy head deg",angleDiff(heading, ai.enemyHeadingDeg(0)))
-    print("absolute value offit:", abs(angleDiff(heading, ai.enemyHeadingDeg(0))))
-
-
-    # OG:
-    print(ai.enemyTrackingDeg(0) > -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) > 5)
-    
-    # IMPROVED:
-    print(ai.enemyTrackingDeg(0) != -1 and abs(angleDiff(heading, ai.enemyHeadingDeg(0))) > 5)
-
-########################################################################################
-
-    print("\n--------- 5 ---------")
-
-    # abs(angleDiff(ai.enemyHeadingDeg(0), heading)) < 5
-    
-    print(ai.enemyHeadingDeg(0))
-    print(heading)
-    print(abs(angleDiff(ai.enemyHeadingDeg(0), heading)))
-
-    # OG:    
-    print(abs(angleDiff(ai.enemyHeadingDeg(0), heading)) < 5)
-
-########################################################################################
-
-    print("\n--------- 6 ---------")  
-    # not ai.closestRadarX() > 0
-    
-#    int closestRadarX() 
-#        - Returns the closest ship's X radar coordinate. 
-#          (0-256)  Returns -1 if there are no ships on the radar.
-
-
-    print("closest radar X", ai.closestRadarX())
-    # OG:
-    print(not ai.closestRadarX() > 0)
-    # IMPROVED:
-    print(ai.closestRadarX() != -1)
-
-
-########################################################################################
-########################################################################################
-
-
 
 
     print("\nfirst logic chunk ---------------------------------------------------")
@@ -207,44 +142,41 @@ def AI_loop():
         print("shot vel dir", ai.shotVelDir(0))
         print("angle reduce:", angleReduce(heading - ai.shotVelDir(0)))
 
-        turn_to_degree(heading, angleReduce(heading - ai.shotVelDir(0)))
-        
-        #turn_to_degree(angleDiff(heading, ai.angleAdd(ai.shotVelDir(0), 180)))
-        
+        #turn_to_degree(heading, angleReduce(heading - ai.shotVelDir(0)))
+        turn_to_degree(heading, angleDiff(heading, angleAdd(ai.shotVelDir(0), 180)))
         ai.thrust(1)
     
-
     elif ai.wallBetween(ai.selfX(), ai.selfY(), ai.screenEnemyX(0), ai.screenEnemyY(0)) != -1:
         
         print("\n--------- 2 --------- wall between self and enemy\n")
 
 
 
-        id = ai.closestShipId()
-
-        if ai.enemyTrackingDegId(id) == None:
+        if ai.enemyTrackingDegId(enemy_id) == None:
             print("enemy tracking is None")
             enemytracking = -1
-        elif math.isnan(ai.enemyTrackingDegId(id)): 
+        
+        elif math.isnan(ai.enemyTrackingDegId(enemy_id)): 
             print("enemy tracking is NaN (not a number)")
             enemytracking = -1
+        
         else:
-            enemytracking = ai.enemyTrackingDegId(id)
+            enemytracking = ai.enemyTrackingDegId(enemy_id)
 
         
         print("enemytracking:", enemytracking)
-        print("enemyDistance:", ai.enemyDistanceId(id))
+        print("enemyDistance:", ai.enemyDistanceId(enemy_id))
         print("heading:", heading)
         
-        opn_wall = open_wall(enemytracking, ai.enemyDistanceId(id))
+        
+        opn_wall = open_wall(enemytracking, ai.enemyDistanceId(enemy_id))
 
         print("opn_wall", opn_wall)
 
-        change_heading(opn_wall, heading)
-
-
+        #turn_to_degree(heading, int(angleDiff(heading, opn_wall)))
         
-        if(ai.selfSpeed() < 6):
+        change_heading(opn_wall, heading)
+        if(ai.selfSpeed() <= 7):
             ai.thrust(1)
 
 
@@ -280,10 +212,18 @@ def AI_loop():
 
 
 
+
+
+
     print("\n\nsecond logic chunk ---------------------------------------------------")
 
+    print("wf1: ", wf_1)
+    print("wf2: ", wf_2)
 
-    if wf_1 == wf_2 and wf_1 < (20 * ai.selfSpeed()) and ai.selfSpeed() > 1:
+
+    #if wf_1 == wf_2 and wf_1 < (20 * ai.selfSpeed()) and ai.selfSpeed() > 1:
+    if wf_1 == wf_2 and ai.selfSpeed() > 1:
+
         print("\n--------- 1 ---------\n")
 
         deg = angleDiff(heading, angleAdd(tracking, 180))
@@ -291,17 +231,18 @@ def AI_loop():
         
 	
 
-    elif wf_1 < wf_2 and wf_1 < (20 * ai.selfSpeed()) and ai.selfSpeed() > 1:
+    elif wf_1 < wf_2 and ai.selfSpeed() > 1:
         print("\n--------- 2 ---------\n")
 
         turn_to_degree(heading, angleDiff(heading, angleAdd(180, angleAdd(-15, tracking))))
+        
         if angleDiff(heading, angleAdd(180, angleAdd(-15, tracking))) < 30:
             ai.thrust(1)
 		
 
 
 
-    elif wf_1 > wf_2 and wf_2 < (20 * ai.selfSpeed()) and ai.selfSpeed() > 1:
+    elif wf_1 > wf_2 and ai.selfSpeed() > 1:
         print("\n--------- 3 ---------\n")
 
         turn_to_degree(heading, angleDiff(heading, angleAdd(180, angleAdd(15, tracking))))
