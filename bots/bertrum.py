@@ -90,11 +90,15 @@ def AI_loop():
 
     print("--------------------------- START of frame ----------------------------")
 
+    global current_frame 
+
     if ai.selfAlive() == 0:
         current_frame = 0
     
     ai.setTurnSpeedDeg(turnspeed)
-    current_frame += 1
+    
+    if ai.selfAlive() == 1:
+        current_frame = current_frame + 1
 
     # reset default flags
     ai.thrust(0)
@@ -108,7 +112,9 @@ def AI_loop():
     
     max_turntime = math.ceil(180 / turnspeed)
 
-    ## set_flags Progressively examines the bot's environment until a flag is set
+##### set_flags Progressively examines the bot's environment until a flag is set
+
+    #check_walls()
 
     # check_walls Checks for possible wall collisions and sets flags accordingly if necessary
     x = ai.selfX()
@@ -138,8 +144,7 @@ def AI_loop():
         desired_heading = angle_add(
             closest_wall_heading, 180)
         
-        if tolerance is None:
-            tolerance = thrust_heading_tolerance
+        tolerance = thrust_heading_tolerance
         if abs(angle_diff(heading, desired_heading)) < tolerance:
             thrust = True
 
@@ -159,8 +164,7 @@ def AI_loop():
         turn = True
         desired_heading = angle_add(tracking, 180)
         
-        if tolerance is None:
-            tolerance = thrust_heading_tolerance
+        tolerance = thrust_heading_tolerance
         if abs(angle_diff(heading, desired_heading)) < tolerance:
             thrust = True
 
@@ -172,6 +176,8 @@ def AI_loop():
                 shoot = True
         
 ###############################################################################################################################
+
+    #check_shots():
 
     '''check_shots Checks for possible bullet collisions using shot alert values and sets flags accordingly if necessary
     '''
@@ -196,8 +202,7 @@ def AI_loop():
             desired_heading = left_option
         desired_heading = right_option
 
-        if e_thrust_heading_tolerance is None:
-            e_thrust_heading_tolerance = thrust_heading_tolerance
+        e_thrust_heading_tolerance = thrust_heading_tolerance
         if abs(angle_diff(heading, desired_heading)) < e_thrust_heading_tolerance:
             thrust = True
         if lowest_alert < 50:
@@ -209,6 +214,8 @@ def AI_loop():
     
 ###############################################################################################################################
 
+    #check_kills()
+
     ##print(f'{username}: Aggressive')
 
     if ai.aimdir(0) != -1:
@@ -217,7 +224,7 @@ def AI_loop():
 
         if abs(angle_diff(heading, desired_heading)) < 5:
             shoot = True
-            ##print(f'{self.username}: Shooting')
+            ##print(f'{username}: Shooting')
 
 
         if current_frame % 133 == 0:
@@ -229,53 +236,173 @@ def AI_loop():
     #check_ships():
     ##print(f'{username}: Avoiding ship')
 
+    # check_ships Checks for possible ship collisions using CPA prediction and sets flags accordingly if necessary
+     
+    idx = 0
+    next_ship_dist = ai.enemyDistance(idx)
+    
+    while next_ship_dist != -1 and next_ship_dist < cpa_check_distance:
+        enemy_x = ai.screenEnemyX(idx)
+        enemy_y = ai.screenEnemyY(idx)
+        enemy_speed = ai.enemySpeed(idx)
+        enemy_tracking = ai.enemyTrackingDeg(idx)
+        
+
+        heading_rad = math.radians(enemy_tracking)
+        enemy_x_vel: float = enemy_speed * math.cos(heading_rad)
+        enemy_y_vel: float = enemy_speed * math.sin(heading_rad)
+
+        found_min = False
+        last_dist: float = math.sqrt((enemy_x - enemy_x) ** 2 + (enemy_y - enemy_y) ** 2)
+        t: int = 1
+        while not found_min:
+            
+            current_dist = math.sqrt((enemy_x + x_vel * t - enemy_x + enemy_x_vel * t) ** 2 + (enemy_y + y_vel * t - enemy_y + enemy_y_vel * t) ** 2)
+            
+            if current_dist < last_dist:
+                t += 1
+                last_dist = current_dist
+            else:
+                found_min = True
+        
+        enemy_cpa_time = t
+        enemy_cpa_distance = last_dist
+
+
+        if enemy_speed < 1:
+            break
+        
+        ##print(f'{ai.enemyName(idx)} cpa time: {enemy_cpa_time} - dist: {enemy_cpa_distance}')
+        if enemy_cpa_distance < 50:
+            if enemy_cpa_time < max_turntime:
+                turn = True
+                left_option = angle_add(enemy_tracking, 90)
+                right_option = angle_add(enemy_tracking, -90)
+                
+                if angle_diff(heading, left_option) < angle_diff(heading, right_option):
+                    desired_heading = left_option
+                desired_heading = right_option
+                ##print(f'{ai.enemyName(idx)} is close, turning to {desired_heading}')
+                thrust = True
+
+            if enemy_cpa_time < tt_retro + safety_margin + max_turntime:
+                turn = True
+                left_option = angle_add(enemy_tracking, 90)
+                right_option = angle_add(enemy_tracking, -90)
+                
+                if angle_diff(heading, left_option) < angle_diff(heading, right_option):
+                    desired_heading = left_option
+                desired_heading = right_option
+                
+                
+                tolerance = thrust_heading_tolerance
+                if abs(angle_diff(heading, desired_heading)) < tolerance:
+                    thrust = True
+                
+                ##(f'{ai.enemyName(idx)} is close, turning to {desired_heading}')
+
+                # if an enemy is all lined up     
+                nearest_aim_dir = ai.aimdir(0)
+                if nearest_aim_dir != -1:
+                    delta = abs(angle_diff(heading, nearest_aim_dir))
+                    if delta < 10:
+                        shoot = True
+
+        idx += 1
+        next_ship_dist = ai.enemyDistance(idx)
 
 
     
 ###############################################################################################################################
-
     #check_speed():
     ##print(f'{username}: Slowing down')
 
+    #check_speed Checks if the ship is going faster than the set maximum speed and sets flags accordingly if necessary
+   
+    if speed > max_speed:
+        desired_heading = angle_add(tracking, 180)
+        turn = True
+        
+        tolerance = thrust_heading_tolerance
+        if abs(angle_diff(heading, desired_heading)) < tolerance:
+            thrust = True
+
     
 ###############################################################################################################################
-
     #check_position():
     ##print(f'{username}: Moving to center')
 
+    # check_position Brings the ship closer to the center of the screen if it is too far away
+     
+    if closest_wall < 400:
+        turn = True
+        desired_heading = angle_add(
+            closest_wall_heading, 180)
+        delta = abs(angle_diff(
+            tracking, closest_wall_heading))
+        delta_desired = abs(angle_diff(
+            heading, desired_heading))
+        if delta_desired < 30 and (delta < 140 or speed < desired_speed):
+            thrust = True
+    elif speed > 1:
+        turn = True
+        desired_heading = angle_add(tracking, 180)
+        
+        if abs(angle_diff(heading, desired_heading)) < 5:
+            thrust = True
 
 ###############################################################################################################################
-
     #check_radar():
     ##print(f'{username}: Enemy Detected On Radar')
 
+        # check_radar Checks for enemies on the radar and sets flags accordingly if necessary
+    
+    x_diff = ai.closestRadarX()
+    if x_diff != -1:
+        y_diff = ai.closestRadarY()
+        x_diff = ai.selfRadarX()
+        y_diff = ai.selfRadarY()
 
-###############################################################################################################################
+        x_diff = x_diff - x_diff
+        y_diff = y_diff - y_diff
 
-    else:
-        desired_heading = heading + random.randint(0, 20)
+        radar_angle = math.degrees(
+            math.atan(abs(y_diff) / abs(x_diff + 0.0000001)))
+
+        if x_diff < 0 and y_diff > 0:
+            radar_angle = 180 - radar_angle
+        elif x_diff < 0 and y_diff < 0:
+            radar_angle = 180 + radar_angle
+        elif x_diff > 0 and y_diff < 0:
+            radar_angle = 360 - radar_angle
+        #temp = last_radar_heading
+        #last_radar_heading = radar_angle
+        #radar_angle += angle_diff(temp, radar_angle)
+        desired_heading = radar_angle
         turn = True
-        shoot = False
 
+        if abs(angle_diff(heading, desired_heading)) < 5 and abs(x_diff) > 8 and abs(y_diff) > 8 and current_frame % 48 == 0:
+            shoot = True
+        ##print(f'Radar@ {x_diff},{y_diff} - {radar_angle}')
 
     '''production_system Uses the three flags to execute the desired actions for the bot
     '''
     if turn and thrust and shoot:
-        turn_to_degree(desired_heading)
+        turn_to_degree(heading, desired_heading)
         ai.thrust(1)
         ai.fireShot()
     elif turn and thrust:
-        turn_to_degree(desired_heading)
+        turn_to_degree(heading, desired_heading)
         ai.thrust(1)
     elif turn and shoot:
-        turn_to_degree(desired_heading)
+        turn_to_degree(heading, desired_heading)
         ai.thrust(0)
         ai.fireShot()
     elif thrust and shoot:
         ai.thrust(1)
         ai.fireShot()
     elif turn:
-        turn_to_degree(desired_heading)
+        turn_to_degree(heading, desired_heading)
         ai.thrust(0)
     elif thrust:
         ai.thrust(1)
@@ -285,14 +412,7 @@ def AI_loop():
         ai.thrust(0)
 
 
-    #Gotta get those free spawn kills
-    if current_frame < 5:
-        ai.fireShot()
-        if current_frame < 2:
-            ai.thrust(1)
-
-
     print("---------------------------- END of frame -----------------------------\n\n\n")
 
 
-ai.start(AI_loop,["-name","SelPy","-join","localhost"])
+ai.start(AI_loop,["-name","BERTRUM","-join","localhost"])
