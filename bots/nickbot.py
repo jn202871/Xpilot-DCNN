@@ -109,6 +109,8 @@ class bot(object):
         '''reset_flags Sets all flags to false and resets control states
         '''
         self.turn, self.thrust, self.shoot = False, False, False
+        ai.setPower(28)
+        ai.setTurnSpeedDeg(20)
         ai.turnLeft(0)
         ai.turnRight(0)
         ai.thrust(0)
@@ -117,25 +119,25 @@ class bot(object):
         '''set_flags Progressively examines the bot's environment until a flag is set
         '''
         if self.check_walls():
-            ##print(f'{self.username}: Avoiding wall')
+            print(f'{self.username}: Avoiding wall')
             pass
         elif self.check_shots():
-            ##print(f'{self.username}: Avoiding bullet')
+            print(f'{self.username}: Avoiding bullet')
             pass
         elif self.check_kills():
-            ##print(f'{self.username}: Aggressive')
+            print(f'{self.username}: Aggressive')
             pass
         elif self.check_ships():
-            ##print(f'{self.username}: Avoiding ship')
+            print(f'{self.username}: Avoiding ship')
             pass
         elif self.check_speed():
-            ##print(f'{self.username}: Slowing down')
+            print(f'{self.username}: Slowing down')
             pass
-        elif False and self.check_position():
-            ##print(f'{self.username}: Moving to center')
+        elif self.check_position():
+            print(f'{self.username}: Moving to center')
             pass
         elif self.check_radar():
-            ##print(f'{self.username}: Enemy Detected On Radar')
+            print(f'{self.username}: Enemy Detected On Radar')
             pass
         else:
             self.desired_heading = self.heading + random.randint(0, 20)
@@ -165,10 +167,11 @@ class bot(object):
 
         if self.closest_wall < self.wall_threshold:
             self.turn = True
-            self.desired_heading = self.angle_add(
-                self.closest_wall_heading, 180)
+            self.desired_heading = self.angle_add(self.closest_wall_heading, 180)
+            
             if self.check_heading_tolerance(self.e_thrust_heading_tolerance) or self.tt_tracking < self.tt_retro + 1:
                 self.thrust = True
+            
             self.check_luck()
             return True
 
@@ -342,15 +345,14 @@ class bot(object):
         '''        
         if self.closest_wall < 400:
             self.turn = True
-            self.desired_heading = self.angle_add(
-                self.closest_wall_heading, 180)
-            delta = abs(self.angle_diff(
-                self.tracking, self.closest_wall_heading))
-            delta_desired = abs(self.angle_diff(
-                self.heading, self.desired_heading))
+            self.desired_heading = self.angle_add(self.closest_wall_heading, 180)
+            delta = abs(self.angle_diff(self.tracking, self.closest_wall_heading))
+            delta_desired = abs(self.angle_diff(self.heading, self.desired_heading))
+            
             if delta_desired < 30 and (delta < 140 or self.speed < self.desired_speed):
                 self.thrust = True
             return True
+        
         elif self.speed > 1:
             self.turn = True
             self.desired_heading = self.angle_add(self.tracking, 180)

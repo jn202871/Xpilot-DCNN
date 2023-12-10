@@ -82,7 +82,7 @@ max_shot_distance: int = 800
 desired_heading: float = 0
 desired_thrust: int = 0
 last_radar_heading: float = 0
-current_frame: int = 0
+global current_frame
 
 def AI_loop():
     '''run_loop Runs on every frame to control the bot
@@ -90,29 +90,21 @@ def AI_loop():
 
     print("--------------------------- START of frame ----------------------------")
 
-    global current_frame 
-
     if ai.selfAlive() == 0:
         current_frame = 0
-    
-    ai.setTurnSpeedDeg(turnspeed)
-    
-    if ai.selfAlive() == 1:
-        current_frame = current_frame + 1
+
+    current_frame = current_frame + 1
 
     # reset default flags
     ai.thrust(0)
     ai.turnLeft(0)
     ai.turnRight(0)
-    ai.setTurnSpeedDeg(20)
-    ai.setPower(20)
-
-    # reset action flags
-    turn, thrust, shoot = False, False, False
+    ai.setTurnSpeedDeg(turnspeed)
+    ai.setPower(power_level)   
     
     max_turntime = math.ceil(180 / turnspeed)
 
-##### set_flags Progressively examines the bot's environment until a flag is set
+
 
     #check_walls()
 
@@ -126,13 +118,14 @@ def AI_loop():
     tracking = int(ai.selfTrackingDeg())
     speed: float = ai.selfSpeed()
     track_wall = ai.wallFeeler(scan_distance, tracking)
-    tt_tracking = math.ceil(
-        track_wall / (speed + 0.0000001))
+    
+    tt_tracking = math.ceil(track_wall / (speed + 0.0000001))
     tt_retro = math.ceil(speed / power_level)
 
     # update_closest_wall Updates the closest wall distance and heading
     closest_wall = scan_distance
     closest_wall_heading = -1
+    
     for degree in range(0, 360, 30):
         wall = ai.wallFeeler(scan_distance, degree)
         if wall < closest_wall:
@@ -141,8 +134,7 @@ def AI_loop():
 
     if closest_wall < wall_threshold:
         turn = True
-        desired_heading = angle_add(
-            closest_wall_heading, 180)
+        desired_heading = angle_add(closest_wall_heading, 180)
         
         tolerance = thrust_heading_tolerance
         if abs(angle_diff(heading, desired_heading)) < tolerance:
@@ -150,7 +142,7 @@ def AI_loop():
 
         if tt_tracking < tt_retro + 1:
             thrust = True
- 
+
         # if an enemy is all lined up     
         nearest_aim_dir = ai.aimdir(0)
         if nearest_aim_dir != -1:
