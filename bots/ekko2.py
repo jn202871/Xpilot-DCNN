@@ -19,11 +19,11 @@ class bot(object):
     '''
     username: str = "EKKO"
     
-    max_speed: int = 3
-    desired_speed: int = 3
+    max_speed: int = 20
+    desired_speed: int = 17
     safety_margin: int = 12
     turnspeed: int = 20
-    power_level: float = 28.0
+    power_level: float = 28
     scan_distance: int = 1000
     cpa_check_distance = 500
     thrust_heading_tolerance: int = 10
@@ -46,12 +46,14 @@ class bot(object):
         self.username = name
         self.max_turntime = math.ceil(180 / self.turnspeed)
 
+
     def run_loop(self, ) -> None:
         '''run_loop Runs on every frame to control the bot
         '''
         if ai.selfAlive() == 0:
             self.current_frame = 0
         ai.setTurnSpeedDeg(self.turnspeed)
+        ai.setPower(self.power_level)
         self.current_frame += 1
         self.reset_flags()
         self.set_flags()
@@ -109,8 +111,6 @@ class bot(object):
         '''reset_flags Sets all flags to false and resets control states
         '''
         self.turn, self.thrust, self.shoot = False, False, False
-        ai.setPower(28)
-        ai.setTurnSpeedDeg(20)
         ai.turnLeft(0)
         ai.turnRight(0)
         ai.thrust(0)
@@ -133,7 +133,7 @@ class bot(object):
         elif self.check_speed():
             print(f'{self.username}: Slowing down')
             pass
-        elif self.check_position():
+        elif False and self.check_position():
             print(f'{self.username}: Moving to center')
             pass
         elif self.check_radar():
@@ -167,11 +167,10 @@ class bot(object):
 
         if self.closest_wall < self.wall_threshold:
             self.turn = True
-            self.desired_heading = self.angle_add(self.closest_wall_heading, 180)
-            
+            self.desired_heading = self.angle_add(
+                self.closest_wall_heading, 180)
             if self.check_heading_tolerance(self.e_thrust_heading_tolerance) or self.tt_tracking < self.tt_retro + 1:
                 self.thrust = True
-            
             self.check_luck()
             return True
 
@@ -249,7 +248,7 @@ class bot(object):
         '''        
         idx = 0
         lowest_idx = -1
-        lowest_alert = 3000
+        lowest_alert = 2000
         next_shot_alert = ai.shotAlert(idx)
         while next_shot_alert != -1:
             if next_shot_alert < lowest_alert:
@@ -257,14 +256,14 @@ class bot(object):
             idx += 1
             next_shot_alert = ai.shotAlert(idx)
         ##print(f'lowest alert: {lowest_alert} idx: {idx}')
-        if lowest_alert < 50:
+        if lowest_alert < 75:
             shot_vel_dir = self.tracking
             self.turn = True
             left_option = self.angle_add(shot_vel_dir, 75)
             right_option = self.angle_add(shot_vel_dir, -75)
             self.desired_heading = self.get_closer_angle(
                 left_option, right_option)
-            if self.check_heading_tolerance(self.e_thrust_heading_tolerance) or lowest_alert < 50:
+            if self.check_heading_tolerance(self.e_thrust_heading_tolerance) or lowest_alert < 75:
                 self.thrust = True
             ##print(f'Dodging shot, turning to {self.desired_heading}')
             return True
@@ -293,9 +292,9 @@ class bot(object):
         if ai.aimdir(0) != -1:
             self.turn = True
             self.desired_heading = ai.aimdir(0)
-            if self.check_heading_tolerance(5):
+            if self.check_heading_tolerance(self.firing_threshold):
                 self.shoot = True
-                ##print(f'{self.username}: Shooting')
+                #print(f'{self.username}: Shooting')
             if self.current_frame % 133 == 0:
                 self.thrust = True
             return True
@@ -330,7 +329,9 @@ class bot(object):
             #radar_angle += self.angle_diff(temp, radar_angle)
             self.desired_heading = radar_angle
             self.turn = True
-            if self.check_heading_tolerance(5) and abs(x_diff) > 8 and abs(y_diff) > 8 and self.current_frame % 48 == 0:
+            if ai.selfSpeed() <= self.desired_speed: # and not self.check_walls():
+                self.thrust = True
+            if self.check_heading_tolerance(self.firing_threshold) and abs(x_diff) > 8 and abs(y_diff) > 8 and self.current_frame % 48 == 0:
                 self.shoot = True
             ##print(f'Radar@ {x_diff},{y_diff} - {radar_angle}')
             return True
@@ -345,14 +346,15 @@ class bot(object):
         '''        
         if self.closest_wall < 400:
             self.turn = True
-            self.desired_heading = self.angle_add(self.closest_wall_heading, 180)
-            delta = abs(self.angle_diff(self.tracking, self.closest_wall_heading))
-            delta_desired = abs(self.angle_diff(self.heading, self.desired_heading))
-            
+            self.desired_heading = self.angle_add(
+                self.closest_wall_heading, 180)
+            delta = abs(self.angle_diff(
+                self.tracking, self.closest_wall_heading))
+            delta_desired = abs(self.angle_diff(
+                self.heading, self.desired_heading))
             if delta_desired < 30 and (delta < 140 or self.speed < self.desired_speed):
                 self.thrust = True
             return True
-        
         elif self.speed > 1:
             self.turn = True
             self.desired_heading = self.angle_add(self.tracking, 180)
@@ -370,7 +372,7 @@ class bot(object):
         nearest_aim_dir = ai.aimdir(0)
         if nearest_aim_dir != -1:
             delta = abs(self.angle_diff(self.heading, nearest_aim_dir))
-            if delta < 10:
+            if delta < 15:
                 self.shoot = True
                 return True
         return False
@@ -514,6 +516,5 @@ class bot(object):
 
 if __name__ == "__main__":
     test = bot("EKKO")
-    #ai.headlessMode()
-    ai.start(test.run_loop, ["-name", test.username])
+    ai.start(test.run_loop, ["-name", test.username, "-join", "localhost"])
     print("Bot stopped")
