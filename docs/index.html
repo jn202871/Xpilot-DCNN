@@ -41,8 +41,8 @@
 							<article id="overview">
 								<h2 class="major">Overview</h2>
 								<span class="image main"><img src="images/pic01.jpg" alt="" /></span>
-								<p>This project focuses on using a Deep Convolutional Neural Net to learn winning behaviors in X-Pilot and score an AI controlled bot based on its movement rather than its score or time survived. This score is important to determining the fitness of AI controlled agents as agents can achieve identitical scores with massively different tactics. We are seeking to emulate the human ability to look at a path and actions taken by an agent and determine if the agent is effective based on its style of play rather than its score.</p>
-								<p>We aim to use this DCNN to test variations of a known good expert system in order to determine what paremeters produce the best style of play. Due to the fact that this expert system is highly effective, a more traditional fitness function is unlikely to decern small differences in play that could result in a more effective agent.</p>
+								<p>This project focuses on using a Deep Convolutional Neural Net to learn expert behaviors in X-Pilot using the process of behavioral cloning. This DCNN is intended to be a general purpose network that can learn the behavior of any bot on any map of a standard size. Currently, this DCNN has been able to effectively learn the behavior of a fuzzy system based expert bot and a bot controlled by a simple neural network. While the DCNN does struggle to learn some behaviors, and this does sometimes result in a high validation loss, the behavior observed in game after training generally matches the preformance of the expert with some deviation.</p>
+								<p>We aim to eventually use this DCNN to combine the behaviors of multiple bots into a single agent, which will hopefully produce a more effective agent than any of the agents used to train it. Our current goals are to continue to reduce the DCNN validation loss and fine tune the network to produce more effective agents trained by just one expert.</p>
 							</article>
 
 						<!-- DCNN -->
