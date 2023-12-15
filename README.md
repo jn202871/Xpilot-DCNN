@@ -7,6 +7,8 @@ When trained on the fuzzyBot on the lifeless map, it is able to attain a validat
 
 The DCNN controlled bot is unable to effectively challenge the fuzzyBot however is able to beat the neuralNetBot. This is a very odd result that requires further investigation to determine the cause.
 
+More information can be found on our website: http://jay.directory/Xpilot-DCNN/
+
 ### Instructions
 To run the DCNN, clone the repositiory and use the included bash scripts to run the agents.
 
