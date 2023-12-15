@@ -180,6 +180,6 @@ class DCNNClassifier(nn.Module):
         x = self.sigmoid(x)
         return x
 model = DCNNClassifier()
-model.load_state_dict(torch.load('./dcnn/models/simpleFuzzy32x32.pt', map_location=torch.device('cpu')))
+model.load_state_dict(torch.load('./dcnn/models/simpleNN32x32v2.pt', map_location=torch.device('cpu')))
 model.eval()
 ai.start(AI_loop,["-name","dcnn-agent","-join","localhost"])

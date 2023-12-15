@@ -1,4 +1,4 @@
 #!/bin/bash
-./xpilots -map .maps/simpleEdit.xp -switchBase 1 -maxRoundTime 30 &
-python3 ./img_processing/fuzzyCollector2.py &
-python3 ./img_processing/fuzzyCollector.py
+./xpilots -map .maps/lifeless.xp -switchBase 1 -maxRoundTime 30 &
+python3 ./img_processing/ekkoCollect.py &
+python3 ./img_processing/ekkoCollect2.py
