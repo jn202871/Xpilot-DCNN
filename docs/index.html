@@ -20,7 +20,7 @@
 						<div class="content">
 							<div class="inner">
 								<h1>Xpilot DCNN Behavioral Cloning</h1>
-								<p>A Deep Convolutional Neural Net developed by Jay Nash, Russell Kosovsky, and Annika Hoag <br /> Designed to learn Xpilot behavior based on observation of experts during play</p>
+								<p>A Deep Convolutional Neural Net developed by Jay Nash, Russell Kosovsky, and Annika Hoag <br/> Designed to learn Xpilot behavior based on observation of experts during play</p>
 							</div>
 						</div>
 						<nav>
@@ -28,7 +28,7 @@
 								<li><a href="#overview">Overview</a></li>
 								<li><a href="#DCNN">DCNN</a></li>
 								<li><a href="#results">Results</a></li>
-								<li><a href="#future">Future Works</a></li>
+								<li><a href="#goals">Future</a></li>
 								<!--<li><a href="#elements">Elements</a></li>-->
 							</ul>
 						</nav>
@@ -50,7 +50,7 @@
 							<article id="DCNN">
 								<h2 class="major">Neural Net Architecture</h2>
 								<span class="image main"><img src="images/pic02.jpg" alt="" /></span>
-								<p>Our neural network starts with the convolutional layers which is where our image data gets inputted into. The first convolutional layer has one input channel that goes into 16 feature layers. These feature layers use a kernel size of 3. The second convolutional layer also has 16 feature layers to 32 feature layers using a kernel size of 3 and a stride of 1.</p>
+								<p>Our neural network starts with the convolutional layers which is where our image data is input. The first convolutional layer has one input channel that goes into 16 feature layers. These feature layers use a kernel size of 3. The second convolutional layer also has 16 feature layers to 32 feature layers using a kernel size of 3 and a stride of 1.</p>
 								<p>We have Relu as our activation function between layers. Relu a more efficient activation function than sigmoid as it eliminates the need to calculate logarithms.</p>
 							</article>
 
@@ -58,14 +58,14 @@
 						<!-- Results -->
 							<article id="results">
 								<h2 class="major">Results</h2>
-								<span class="image main"><img src="images/results.png" alt="" /></span>
+								<span class="image main"><img src="images/Capture.png" alt="" /></span>
 								<p>The above picture shows the data collected by simpleNet playing against itself on the simple map.</p>
-								<p>When trained on fuzzyBot on the lifeless map the DCNN is able to attain a validation loss of ~10%. The DCNN achieved a validation loss of ~28% after 20 epochs when trained on neuralBot, likely due to illogical neuralBot behavior.</p>
-								<p>The DCNN controlled bot is unable to effectively challenge the fuzzyBot, however it is able to beat the neuralNetBot. This result was very unexpected and requires further investigaion to find the cause.</p>
+								<p>When trained on fuzzyBot on the simple map the DCNN is able to attain a validation loss of ~18% after 10 epochs. The DCNN achieved a validation loss of ~28% after 10 epochs when trained on neuralBot, possibly due to illogical neuralBot behavior.</p>
+								<p>The DCNN controlled bot is able to effectively challenge both bots, and in both cases outpreform the bot it was trained on. This result was very unexpected and requires further investigaion to find the cause.</p>
 							</article>
 
 						<!-- Future Works -->
-							<article id="future">
+							<article id="goals">
 								<h2 class="major">Future Works</h2>
 								<!--<span class="image main"><img src="images/pic03.jpg" alt="" /></span>-->
 								<p>We aim to eventually use this DCNN to combine the behaviors of multiple bots into a single agent. We predict that when trained on multiple bots, the DCNN will generalize to only include the most useful or effective behaviors from each of the individual bots. We hope that this process will produce a more effective agent than any of the agents used to train it.</p>
