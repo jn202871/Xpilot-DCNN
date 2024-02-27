@@ -30,7 +30,7 @@ class bot(object):
     e_thrust_heading_tolerance: int = 15
     wall_threshold: int = 25
     firing_threshold: int = 5
-    max_shot_distance: int = 800
+    max_shot_distance: int = 1000
 
     desired_heading: float = 0
     desired_thrust: int = 0
@@ -59,11 +59,8 @@ class bot(object):
         self.set_flags()
         self.production_system()
 
-        if self.current_frame < 5:
-            #Gotta get those free spawn kills
-            ai.fireShot()
-            if self.current_frame < 2:
-                ai.thrust(1)
+        if self.current_frame < 2:
+            ai.thrust(1)
 
     def production_system(self,) -> None:
         '''production_system Uses the three flags to execute the desired actions for the bot
@@ -99,13 +96,14 @@ class bot(object):
             degree (float): Heading to turn to
         '''
         delta = self.angle_diff(self.heading, degree)
-        if abs(delta) > 20:
-            if delta < 0:
-                ai.turnRight(1)
-            else:
-                ai.turnLeft(1)
+        #if abs(delta) > 20:
+        print(delta)
+        if delta < 0:
+            ai.turnRight(1)
         else:
-            ai.turnToDeg(int(degree))
+            ai.turnLeft(1)
+        #else:
+            #ai.turnToDeg(int(degree))
 
     def reset_flags(self,) -> None:
         '''reset_flags Sets all flags to false and resets control states
@@ -119,25 +117,25 @@ class bot(object):
         '''set_flags Progressively examines the bot's environment until a flag is set
         '''
         if self.check_walls():
-            print(f'{self.username}: Avoiding wall')
+            #print(f'{self.username}: Avoiding wall')
             pass
         elif self.check_shots():
-            print(f'{self.username}: Avoiding bullet')
+            #print(f'{self.username}: Avoiding bullet')
             pass
         elif self.check_kills():
-            print(f'{self.username}: Aggressive')
+            #print(f'{self.username}: Aggressive')
             pass
         elif self.check_ships():
-            print(f'{self.username}: Avoiding ship')
+            #print(f'{self.username}: Avoiding ship')
             pass
         elif self.check_speed():
-            print(f'{self.username}: Slowing down')
+            #print(f'{self.username}: Slowing down')
             pass
         elif False and self.check_position():
-            print(f'{self.username}: Moving to center')
+            #print(f'{self.username}: Moving to center')
             pass
         elif self.check_radar():
-            print(f'{self.username}: Enemy Detected On Radar')
+            #print(f'{self.username}: Enemy Detected On Radar')
             pass
         else:
             self.desired_heading = self.heading + random.randint(0, 20)
@@ -307,7 +305,7 @@ class bot(object):
             bool: True if enemy located on radar, otherwise False
         '''         
         x_diff = ai.closestRadarX()
-        if x_diff != -1:
+        if x_diff != -1 and x_diff < 1000:
             y_diff = ai.closestRadarY()
             self.x_diff = ai.selfRadarX()
             self.y_diff = ai.selfRadarY()

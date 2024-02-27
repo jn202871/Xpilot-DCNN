@@ -30,12 +30,16 @@ class bot(object):
     e_thrust_heading_tolerance: int = 15
     wall_threshold: int = 25
     firing_threshold: int = 5
-    max_shot_distance: int = 800
+    max_shot_distance: int = 1000
 
     desired_heading: float = 0
     desired_thrust: int = 0
     last_radar_heading: float = 0
     current_frame: int = 0
+    thrustRec = 0
+    fireShot = 0
+    turnLeft = 0
+    turnRight = 0
 
     def __init__(self, name='ekko') -> None:
         '''__init__ Initializes the bot
@@ -58,39 +62,49 @@ class bot(object):
         self.reset_flags()
         self.set_flags()
         self.production_system()
+        self.record()
 
-        if self.current_frame < 5:
-            #Gotta get those free spawn kills
-            ai.fireShot()
-            if self.current_frame < 2:
-                ai.thrust(1)
+        if self.current_frame < 2:
+            self.thrustRec = 1
+            ai.thrust(1)
 
     def production_system(self,) -> None:
         '''production_system Uses the three flags to execute the desired actions for the bot
         '''
         if self.turn and self.thrust and self.shoot:
             self.turn_to_degree(self.desired_heading)
+            self.thrustRec = 1
+            self.fireShot = 1
             ai.thrust(1)
             ai.fireShot()
         elif self.turn and self.thrust:
+            self.thrustRec = 1
             self.turn_to_degree(self.desired_heading)
             ai.thrust(1)
         elif self.turn and self.shoot:
             self.turn_to_degree(self.desired_heading)
+            self.thrustRec = 0
+            self.fireShot = 1
             ai.thrust(0)
             ai.fireShot()
         elif self.thrust and self.shoot:
+            self.thrustRec = 1
+            self.fireShot = 1
             ai.thrust(1)
             ai.fireShot()
         elif self.turn:
             self.turn_to_degree(self.desired_heading)
+            self.thrustRec = 0
             ai.thrust(0)
         elif self.thrust:
+            self.thrustRec = 1
             ai.thrust(1)
         elif self.shoot:
+            self.fireShot = 1
             ai.fireShot()
         else:
             ai.thrust(0)
+            self.thrustRec = 0
 
     def turn_to_degree(self, degree: float) -> None:
         '''turn_to_degree Turns the bot to the desired heading
@@ -99,17 +113,21 @@ class bot(object):
             degree (float): Heading to turn to
         '''
         delta = self.angle_diff(self.heading, degree)
-        if abs(delta) > 20:
-            if delta < 0:
-                ai.turnRight(1)
-            else:
-                ai.turnLeft(1)
+        #if abs(delta) > 20:
+        print(delta)
+        if delta < 0:
+            self.turnRight = 1
+            ai.turnRight(1)
         else:
-            ai.turnToDeg(int(degree))
+            self.turnLeft = 1
+            ai.turnLeft(1)
+        #else:
+            #ai.turnToDeg(int(degree))
 
     def reset_flags(self,) -> None:
         '''reset_flags Sets all flags to false and resets control states
         '''
+        self.fireShot, self.thrustRec, self.turnRight, self.turnLeft = 0,0,0,0
         self.turn, self.thrust, self.shoot = False, False, False
         ai.turnLeft(0)
         ai.turnRight(0)
@@ -119,25 +137,25 @@ class bot(object):
         '''set_flags Progressively examines the bot's environment until a flag is set
         '''
         if self.check_walls():
-            print(f'{self.username}: Avoiding wall')
+            #print(f'{self.username}: Avoiding wall')
             pass
         elif self.check_shots():
-            print(f'{self.username}: Avoiding bullet')
+            #print(f'{self.username}: Avoiding bullet')
             pass
         elif self.check_kills():
-            print(f'{self.username}: Aggressive')
+            #print(f'{self.username}: Aggressive')
             pass
         elif self.check_ships():
-            print(f'{self.username}: Avoiding ship')
+            #print(f'{self.username}: Avoiding ship')
             pass
         elif self.check_speed():
-            print(f'{self.username}: Slowing down')
+            #print(f'{self.username}: Slowing down')
             pass
         elif False and self.check_position():
-            print(f'{self.username}: Moving to center')
+            #print(f'{self.username}: Moving to center')
             pass
         elif self.check_radar():
-            print(f'{self.username}: Enemy Detected On Radar')
+            #print(f'{self.username}: Enemy Detected On Radar')
             pass
         else:
             self.desired_heading = self.heading + random.randint(0, 20)
@@ -307,7 +325,7 @@ class bot(object):
             bool: True if enemy located on radar, otherwise False
         '''         
         x_diff = ai.closestRadarX()
-        if x_diff != -1:
+        if x_diff != -1 and x_diff < 1000:
             y_diff = ai.closestRadarY()
             self.x_diff = ai.selfRadarX()
             self.y_diff = ai.selfRadarY()
@@ -512,6 +530,96 @@ class bot(object):
         if abs(diff) < abs(comp_diff):
             return diff
         return comp_diff
+        
+    def record(self):
+        area = [
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        ]
+        
+        # Ship Heading And Position Tracking
+        x_cord = int(ai.selfX() / 35)
+        y_cord = 31 - int(ai.selfY() / 35)
+        area[y_cord][x_cord] = 3
+        aimdir = ai.aimdir(0)
+        if (aimdir < 0):
+            aimdir = -1
+        print(aimdir)
+        area[y_cord][x_cord+1] = int(ai.selfSpeed())
+        area[y_cord][x_cord-1] = int(aimdir)
+        area[y_cord+1][x_cord] = int(ai.selfHeadingDeg())
+        area[y_cord-1][x_cord] = int(ai.selfTrackingDeg())
+    
+        # Enemy Heading And Position Tracking
+        enemy = ai.closestShipId()
+        if (enemy != -1):
+            ex_cord = int(ai.screenEnemyX(0) / 35)
+            ey_cord = 31 - int(ai.screenEnemyY(0) / 35)
+            area[ey_cord][ex_cord] = 4
+            area[ey_cord][ex_cord+1] = int(ai.enemySpeed(0))
+            area[ey_cord+1][ex_cord] = int(ai.enemyHeadingDeg(0))
+            enemyTracking = ai.enemyTrackingDeg(0)
+            if (math.isnan(enemyTracking)):
+                enemyTracking = ai.enemyHeadingDeg(0)
+            area[ey_cord-1][ex_cord] = int(enemyTracking)
+  
+        # Bullet Tracking
+        bulletIndex = 0
+        bullets = []
+        while(ai.shotAlert(bulletIndex) != -1):
+            bulletX = int(ai.shotX(bulletIndex)/35)
+            bulletY = 31 - int(ai.shotY(bulletIndex)/35)
+            bulletAlert = int(ai.shotAlert(bulletIndex))
+            if (bulletAlert == 30000):
+                bulletAlert = 0
+            bullets.append([bulletX,bulletY,bulletAlert])
+            bulletIndex += 1
+        for bullet in bullets:
+            area[bullet[1]][bullet[0]] = 5
+            area[bullet[1]][bullet[0]+1] = bullet[2]
+            
+        if (ai.selfAlive() == 1):
+            frameStr = ','.join(str(item) for innerlist in area for item in innerlist)
+            actionStr = str(self.thrustRec) + "," + str(self.fireShot) + "," +str(self.turnLeft) + "," + str(self.turnRight)
+            file = open("data.txt", "a")
+            file.write(frameStr + '\n')
+            file.write(actionStr+ '\n')
+            file.close()
+        if (ai.selfAlive() == 1):
+            for row in area:
+                for val in row:
+                    print(val, end="")
+                print()
 
 
 if __name__ == "__main__":
