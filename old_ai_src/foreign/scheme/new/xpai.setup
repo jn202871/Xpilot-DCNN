@@ -1,8 +1,0 @@
-;; -*- mode: scheme -*-
-(compile -s -O2 xpai.scm -lxpilot_ai -j xpai)
-(compile -s -O2 xpai.import.scm)
-(compile -c -O2 -lxpilot_ai xpai.scm)
-
-(install-extension 'xpai
- '("xpai.so" "xpai.import.so" "xpai.o")
- '((static "xpai.o")))

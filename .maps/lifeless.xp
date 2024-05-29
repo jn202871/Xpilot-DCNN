@@ -262,20 +262,20 @@ teamsharescore : no
 
 mapData: \multiline: EndOfMapdata
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-x     x                  x     x
-x     x                  x     x
-x     x                  x     x
+x  12          12          21  x
 x                              x
-x324                        123x
+x                              x
+x                              x
+x                              x
+x                              x
+x                              x
 xxxx                        xxxx
+x2                            1x
 x                              x
-x                              x
-x                              x
-x                              x
-x            2    3            x
+x            2    1            x
 x            x    x            x
 x            x    x            x
-x        3  1x1234x4  2        x
+x        1  2x1212x1  2        x
 x        xxxxxxxxxxxxxx        x
 x        xx    xx    xx        x
 x        x     xx     x        x
@@ -283,7 +283,7 @@ x              xx              x
 x              xx              x
 x                              x
 x                              x
-x1                            4x
+x1                            2x
 xxxx                        xxxx
 x                              x
 x                              x
@@ -291,6 +291,6 @@ x                              x
 x                              x
 x                              x
 x                              x
-x  14     _    14          41  x
+x  12          12          21  x
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 EndOfMapdata

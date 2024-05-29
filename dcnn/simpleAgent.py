@@ -145,7 +145,7 @@ class DCNNClassifier(nn.Module):
         self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=(1,1), padding=1)
         self.bn2 = nn.BatchNorm2d(32)
         self.pool = nn.MaxPool2d((2,2))
-        self.fc1 = nn.Linear(8192,layerwidth)
+        self.fc1 = nn.Linear(8192,layerwidth) #8192
         self.bn3 = nn.BatchNorm1d(layerwidth)
         self.fc2 = nn.Linear(layerwidth,layerwidth)
         self.bn4 = nn.BatchNorm1d(layerwidth)
@@ -177,9 +177,9 @@ class DCNNClassifier(nn.Module):
         x = self.relu(x)
         x = self.drop(x)
         x = self.fc4(x)
-        x = self.sigmoid(x)
+        #x = self.sigmoid(x)
         return x
 model = DCNNClassifier()
-model.load_state_dict(torch.load('./dcnn/models/simpleFuzzy32x32.pt', map_location=torch.device('cpu')))
+model.load_state_dict(torch.load('./dcnn/models/modelstate_20_0.17598736747290644.pt', map_location=torch.device('cuda')))
 model.eval()
 ai.start(AI_loop,["-name","dcnn-agent","-join","localhost"])

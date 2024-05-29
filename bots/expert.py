@@ -1,120 +1,89 @@
 import libpyAI as ai
 import math
 
-
-FEELER_DIRS = []
-FEELER_DIRS.append(0)
-FEELER_DIRS.append(15)
-FEELER_DIRS.append(-15)
-FEELER_DIRS.append(30)
-FEELER_DIRS.append(-30)
-FEELER_DIRS.append(45)
-FEELER_DIRS.append(-45)
-FEELER_DIRS.append(60)
-FEELER_DIRS.append(-60)
-FEELER_DIRS.append(75)
-FEELER_DIRS.append(-75)
-FEELER_DIRS.append(90)
-FEELER_DIRS.append(-90)
-
-
-def open_wall(xdir, dist):
-    if(dist > 2000):
-        dist = 2000
-    if(xdir == -1 or dist == -1):
-        return ai.angleAdd(int(ai.selfTrackingDeg()),180)
-    else:
-        max = -1
-        for i in range(12):
-            w = ai.wallFeeler(dist, xdir+FEELER_DIRS[i])
-            if w == dist:
-                return i
-            elif w > max:
-                max = i
-        return i
-        
-def change_tracking(direction):
-	change_heading(ai.angleAdd(int(ai.selfTrackingDeg()), ai.angleDiff(direction, int(ai.selfTrackingDeg()))))
-	
-def change_heading(direction):
-	ai.turn(ai.angleDiff(int(ai.selfHeadingDeg()), direction))
-
 def AI_loop():
 
-    ai.thrust(0)
-    ai.turnLeft(0)
-    ai.turnRight(0)
-    ai.setTurnSpeedDeg(20)
-
-    heading = int(ai.selfHeadingDeg())
-    tracking = int(ai.selfTrackingDeg())
-    enemy = ai.closestShipId()
-    renemy_x = ai.closestRadarX()
-    renemy_y = ai.closestRadarY()
-    radar_angle = int(math.degrees(math.atan(abs(renemy_y)/abs(renemy_x + 0.00000001))))
-    heading_to_enemy = ai.angleDiff(heading, ai.aimdir(0))
-    heading_to_dodge = ai.angleDiff(heading, ai.angleAdd(ai.shotVelDir(0),180))
-
-    # Wall Feelers
-    wall_feeler0 = ai.wallFeeler(500, tracking)
-    wall_feeler1 = ai.wallFeeler(500, tracking + 15)
-    wall_feeler2 = ai.wallFeeler(500, tracking - 15)
-    wall_feeler3 = ai.wallFeeler(500, tracking + 30)
-    wall_feeler4 = ai.wallFeeler(500, tracking - 30)
-    wall_feeler5 = ai.wallFeeler(500, tracking + 45)
-    wall_feeler6 = ai.wallFeeler(500, tracking - 45)
-    wall_feeler7 = ai.wallFeeler(500, tracking + 60)
-    wall_feeler8 = ai.wallFeeler(500, tracking - 60)
-    wall_feeler9 = ai.wallFeeler(500, tracking + 75)
-    wall_feeler10 = ai.wallFeeler(500, tracking - 75)
-    wall_feeler11 = ai.wallFeeler(500, tracking + 90)
-    wall_feeler12 = ai.wallFeeler(500, tracking - 90)
+    #Release keys
+  ai.thrust(0)
+  ai.turnLeft(0)
+  ai.turnRight(0)
+  ai.setPower(25)
+  #Set variables
+  rTurn = False #Unused
+  lTurn = True #Unused
+  
+  # Wall Feelers
+  heading = int(ai.selfHeadingDeg())
+  tracking = int(ai.selfTrackingDeg())
+  
+  frontWall = ai.wallFeeler(1000,heading)
+  frontWallL = ai.wallFeeler(1000,heading+10)
+  frontWallR = ai.wallFeeler(1000,heading-10)
+  
+  leftWall = ai.wallFeeler(1000,heading+90)
+  leftWallL = ai.wallFeeler(1000,heading+100)
+  leftWallR = ai.wallFeeler(1000,heading+80)
+  
+  rightWall = ai.wallFeeler(1000,heading+270)
+  rightWallL = ai.wallFeeler(1000,heading+280)
+  rightWallR = ai.wallFeeler(1000,heading+260)
+  
+  backWall = ai.wallFeeler (1000,heading+180)
+  backWallL = ai.wallFeeler(1000,heading+190)
+  backWallR = ai.wallFeeler(1000,heading+170)
+  
+  frontWallT = frontWall+frontWallL+frontWallR
+  leftWallT = leftWall+leftWallL+leftWallR
+  rightWallT = rightWall+rightWallL+rightWallR
+  backWallT = backWall+backWallL+backWallR
+  
+  trackWall = ai.wallFeeler(1000,tracking)
+  trackWallL = ai.wallFeeler(1000,tracking+10)
+  trackWallR = ai.wallFeeler(1000,tracking-10)
+  
+  trackWallT = trackWall+trackWallR+trackWallL
+  
+  # Small production system for thrust
+  if frontWallT > 1500 and ai.selfSpeed() < 15:
+    ai.thrust(1)
+  elif frontWallT > leftWallT and frontWallT > rightWallT and frontWallT > backWallT and ai.selfSpeed() < 15:
+    ai.thrust(1)
+  elif trackWallT < 450 and 270 >= abs(tracking-heading) >= 90:
+    ai.thrust(1)
+  elif backWall < 10:
+    ai.thrust(1)
+  elif ai.selfSpeed() < 5:
+    ai.thrust(1)
     
-    renemy_x = renemy_x - ai.selfRadarX()
-    renemy_y = renemy_y - ai.selfRadarY()
-
-    if renemy_x < 0 and renemy_y > 0:
-        radar_angle = 180 - radar_angle
-    elif renemy_x < 0 and renemy_y < 0:
-        radar_angle = 180 + radar_angle
-    elif renemy_x > 0 and renemy_y < 0:
-        radar_angle = 360 - radar_angle
-
-    # Dodging and Shooting
-    if(ai.shotAlert(0) > -1 and ai.shotAlert(0) < 80):
-        print("Dodging")
-        ai.turnToDeg(heading_to_dodge)
-        ai.thrust(1)
-        
-    elif(ai.wallBetween(ai.selfX(),ai.selfY(),ai.screenEnemyX(0),ai.screenEnemyY(0)) != -1):
-    	change_heading(open_wall(radar_angle,ai.enemyDistance(0)))
-    	if(ai.selfSpeed() < 6):
-    		ai.thrust(1)
-    		
-    elif(ai.closestShipId() > -1 and abs(ai.angleDiff(heading,ai.aimdir(0))) < 5):
-    	change_heading(ai.aimdir(0))
-    	ai.fireShot()
-    	
-    elif(ai.closestShipId() > -1 and abs(ai.angleDiff(heading,ai.aimdir(0))) > 5):
-    	change_heading(ai.aimdir(0))
-    	
-    # Wall Avoidance
+  # Main production system for turning and aiming
+  if heading > ai.aimdir(0) and ai.enemyDistance(0) < 300 and trackWall > 100:
+    ai.turnRight(1)
+  elif heading < ai.aimdir(0) and ai.enemyDistance(0) < 300 and trackWall > 100:
+    ai.turnLeft(1)
+  elif leftWallT > rightWallT and trackWallT > 900 and ai.selfSpeed() > 5:
+    ai.turnLeft(1)
+  elif leftWallT < rightWallT and trackWallT > 900 and ai.selfSpeed() > 5:
+    ai.turnRight(1)
+  elif heading > (tracking+180)%360 and trackWallT < 900 and ai.selfSpeed() > 10:
+    ai.turnRight(1)
+  elif heading < (tracking+180)%360 and trackWallT < 900 and ai.selfSpeed() > 10:
+    ai.turnLeft(1)
+  elif leftWallT > rightWallT and trackWallT < 500:
+    ai.turnLeft(1)
+  elif rightWallT > leftWallT and trackWallT < 500:
+    ai.turnRight(1)
+  elif heading > ai.aimdir(0) and frontWallT > 100 and leftWallT > 100 and rightWallT > 100 and backWallT > 100:
+    ai.turnRight(1)
+  elif heading < ai.aimdir(0) and frontWallT > 100 and leftWallT > 100 and rightWallT > 100 and backWallT > 100:
+    ai.turnLeft(1)
+  elif leftWallT > rightWallT:
+    ai.turnLeft(1)
+  elif leftWallT > rightWallT:
+    ai.turnRight(1)
     
-    if((wall_feeler1 == wall_feeler2) and (wall_feeler1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
-        ai.turnToDeg(ai.angleDiff(heading, ai.angleAdd(tracking, 180)))
-        print("Turning 1: ",ai.angleDiff(heading, ai.angleAdd(tracking, 180)))
-        
-    elif((wall_feeler1 < wall_feeler2) and (wall_feeler1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
-        ai.turnToDeg(ai.angleDiff(heading, ai.angleAdd(180, ai.angleAdd(-15,tracking))))
-        if(ai.angleDiff(heading, ai.angleAdd(180, ai.angleAdd(-15,tracking))) < 30):
-        	ai.thrust(1)
-        print("Turning 2: ",ai.angleDiff(heading, ai.angleAdd(180, ai.angleAdd(-15,tracking))))
-        
-    elif((wall_feeler1 > wall_feeler2) and (wall_feeler1 < (20 * ai.selfSpeed())) and (ai.selfSpeed() > 1)):
-        ai.turnToDeg(ai.angleDiff(heading, ai.angleAdd(180, ai.angleAdd(15,tracking))))
-        if(ai.angleDiff(heading, ai.angleAdd(180, ai.angleAdd(15,tracking))) < 30):
-        	ai.thrust(1)
-        print("Turning 3: ",ai.angleDiff(heading, ai.angleAdd(180, ai.angleAdd(15,tracking))))
+  # Shooting
+  if (ai.aimdir(0)+5)%360 >= heading >= (ai.aimdir(0)-5)%360:
+    ai.fireShot()
     	
 
 ai.start(AI_loop, ["-name", "ExpertSystem", "-join", "localhost"])

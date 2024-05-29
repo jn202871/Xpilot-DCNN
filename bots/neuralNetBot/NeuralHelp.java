@@ -175,7 +175,6 @@ class NeuralHelp extends javaAI {
             	area[bullet[1]][bullet[0]] = 5;
             	area[bullet[1]][bullet[0] + 1] = bullet[2];
         	}
-        	/*
         	StringBuilder frameStrBuilder = new StringBuilder();
 			for (int[] innerlist : area) {
     			for (int item : innerlist) {
@@ -206,7 +205,6 @@ class NeuralHelp extends javaAI {
         	} catch (Exception e) {
         		System.out.println("IO ERROR");
         	}
-        	*/
         }
 }
 

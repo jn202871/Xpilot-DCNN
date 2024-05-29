@@ -10,29 +10,16 @@ import time
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 # Hyperparameters
-a=torch.cuda.FloatTensor()
 alpha = 0.0001
-epochs = 100
+epochs = 1000
 hiddenlayers = 4
 layerwidth = 4096
-'''
-# Initialize wandb
-wandb.init(
-    project="xpilot_cloning",
-    config={
-    	"architecture": "AALL",
-        "leanring rate": alpha,
-        "hiddenlayers": hiddenlayers,
-        "layerwidth": layerwidth,
-        "batch_size": 64,
-        "epochs": epochs,
-        "dataset_size": 50000
-    }
-)
-print("Wandb run initialized")
-'''
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print("Hyperparameters Created")
+print("Using Compute Resource:", device)
+
 # Connect to SQLite database
-conn = sqlite3.connect('neural_data.db')
+conn = sqlite3.connect('xpilot_data.db')
 cursor = conn.cursor()
 cursor.execute("SELECT frame, actions FROM frames LIMIT 600000")
 db_data = cursor.fetchall()
@@ -52,6 +39,8 @@ actions = torch.tensor(actions, dtype=torch.float32).view(len(actions), -1)
 frames = torch.tensor(frames, dtype=torch.float32).view(-1,1,32,32)
 
 print("Data preprocessed")
+print("Actions Tensor Shape:", actions.shape)
+print("Frames Tensor Shape:", frames.shape)
 	
 # Create Dataset and Dataloader
 dataset = data.TensorDataset(frames, actions)
@@ -60,10 +49,10 @@ split_ratio = 0.8
 split_idx = int(len(dataset) * split_ratio)
 train_dataset, val_dataset = data.random_split(dataset, [split_idx, len(dataset) - split_idx])
 
-train_loader = data.DataLoader(train_dataset, batch_size=128, shuffle=True, pin_memory=True, num_workers=2)
-val_loader = data.DataLoader(val_dataset, batch_size=128, shuffle=False, pin_memory=True, num_workers=2)
+train_loader = data.DataLoader(train_dataset, batch_size=64, shuffle=True, pin_memory=True, num_workers=16, drop_last=True)
+val_loader = data.DataLoader(val_dataset, batch_size=64, shuffle=False, pin_memory=True, num_workers=16, drop_last=True)
 
-print("Tensor Dataset and DataLoaders created")
+print("TensorDataset and DataLoaders created")
 
 # Construct DCNN classifier
 class DCNNClassifier(nn.Module):
@@ -112,19 +101,21 @@ class DCNNClassifier(nn.Module):
 print("DCNN class constructed")
 
 # Check GPU availability
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-#device = torch.device('cpu')
-print("Using Compute Resource:", device)
-
-
-# Move model to device
 model = DCNNClassifier().to(device)
+print("Using Compute Resource:", device)
 
 # Setup Training
 criterion = nn.BCEWithLogitsLoss()
+
 optimizer = optim.AdamW(model.parameters(), lr=alpha, weight_decay=1e-5)
-scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=2, verbose=False)
+# optimizer = optim.Adam(model.parameters(), lr=alpha, weight_decay=1e-5)
+#optimizer = optim.RMSprop(model.parameters(), lr=alpha, weight_decay=1e-5)
+
+scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=2)
+#scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
+
 print("Loss function and optimizer initialized")
+
 # Training Loop
 for epoch in range(epochs):
     start = time.time()
@@ -151,13 +142,13 @@ for epoch in range(epochs):
     avg_val_loss = sum(val_losses) / len(val_losses)
     scheduler.step(avg_val_loss)
     end = time.time()
-    if (avg_val_loss <= 0.2):
-        path = f"./gdrive/MyDrive/Colab/XP-DCNN/{avg_val_loss}model.pt"
+    form1, form2, form3 = "{:<09}", "{:e}", "{:02d}"
+    if (epoch % 10 == 0):
+        path = f"./models/modelstate_{epoch}_{avg_val_loss}.pt"
         torch.save(model.state_dict(), path)
-    form1, form2, form3 = "{:<05}", "{:e}", "{:02d}"
-    print(f"Epoch {form3.format(epoch+1)}/{epochs}: Training Loss: {form1.format(round(loss.item(),3))}, Validation Loss: {form1.format(round(avg_val_loss,3))}, LR: {form2.format(optimizer.param_groups[-1]['lr'])} Time: {form1.format(round(end-start,2))}")
+    print(f"Epoch {form3.format(epoch+1)}/{epochs}: Training Loss: {form1.format(round(loss.item(),7))}, Validation Loss: {form1.format(round(avg_val_loss,7))}, LR: {form2.format(optimizer.param_groups[-1]['lr'])} Time: {form1.format(round(end-start,2))}")
     #wandb.log({"train_loss": loss.item(), "val_loss": avg_val_loss,"epoch": epoch})
 
 # Save Trained Model
 #wandb.finish()
-print("Trained Model Saved")
+#print("Trained Model Saved")
