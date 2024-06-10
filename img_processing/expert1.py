@@ -1,15 +1,7 @@
 import libpyAI as ai
 import math
-import sys
-import sqlite3
 
-global CurrentRound,alive,lastScore,pauseWrite
-CurrentRound = 0
-alive = True
-pauseWrite = False
-lastScore = 0.0
 def AI_loop():
-  global CurrentRound,alive,lastScore,pauseWrite
   area = [
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -130,19 +122,19 @@ def AI_loop():
   trackWallT = trackWall+trackWallR+trackWallL
   
   # Small production system for thrust
-  if frontWallT > 1500 and ai.selfSpeed() < 10:
+  if frontWallT > 1000 and ai.selfSpeed() < 10:
     ai.thrust(1)
     thrust = 1
   elif frontWallT > leftWallT and frontWallT > rightWallT and frontWallT > backWallT and ai.selfSpeed() < 10:
     ai.thrust(1)
     thrust = 1
-  elif trackWallT < 450 and 270 >= abs(tracking-heading) >= 90:
+  elif trackWallT < 350 and 270 >= abs(tracking-heading) >= 90:
     ai.thrust(1)
     thrust = 1
   elif backWall < 10:
     ai.thrust(1)
     thrust = 1
-  elif ai.selfSpeed() < 1 and frontWallT > 200:
+  elif ai.selfSpeed() < 1 and frontWallT > 100:
     ai.thrust(1)
     thrust = 1
     
@@ -153,22 +145,22 @@ def AI_loop():
   elif heading < ai.aimdir(0) and ai.enemyDistance(0) < 300 and trackWall > 100:
     ai.turnLeft(1)
     turnLeft = 1
-  elif leftWallT > rightWallT and trackWallT > 900 and ai.selfSpeed() > 5:
+  elif leftWallT > rightWallT and trackWallT > 700 and ai.selfSpeed() > 5:
     ai.turnLeft(1)
     turnLeft = 1
-  elif leftWallT < rightWallT and trackWallT > 900 and ai.selfSpeed() > 5:
+  elif leftWallT < rightWallT and trackWallT > 700 and ai.selfSpeed() > 5:
     ai.turnRight(1)
     turnRight = 1
-  elif heading > (tracking+180)%360 and trackWallT < 900 and ai.selfSpeed() > 10:
+  elif heading > (tracking+180)%360 and trackWallT < 700 and ai.selfSpeed() > 10:
     ai.turnRight(1)
     turnRight = 1
-  elif heading < (tracking+180)%360 and trackWallT < 900 and ai.selfSpeed() > 10:
+  elif heading < (tracking+180)%360 and trackWallT < 700 and ai.selfSpeed() > 10:
     ai.turnLeft(1)
     turnLeft = 1
-  elif leftWallT > rightWallT and trackWallT < 500:
+  elif leftWallT > rightWallT and trackWallT < 400:
     ai.turnLeft(1)
     turnLeft = 1
-  elif rightWallT > leftWallT and trackWallT < 500:
+  elif rightWallT > leftWallT and trackWallT < 400:
     ai.turnRight(1)
     turnRight = 1
   elif heading > ai.aimdir(0) and frontWallT > 100 and leftWallT > 100 and rightWallT > 100 and backWallT > 100:
@@ -196,22 +188,8 @@ def AI_loop():
     file.write(frameStr + '\n')
     file.write(actionStr+ '\n')
     file.close()
+    file = open("expertscore.txt", "w")
+    file.write(str(ai.selfScore()) + '\n')
+    file.close()
     
-  if (pauseWrite == True):
-    pauseWrite = False
-  if (ai.selfAlive() == 1):
-    if (alive != True):
-      alive = True
-  else:
-    if (alive != False):
-      alive = False
-      pauseWrite = True
-      CurrentRound += 1
-  if (pauseWrite == False):
-    conn = sqlite3.connect('score_data.db')
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO ExpertScores (Score,Round,Match) values(?,?,?)",(ai.selfScore(),CurrentRound,sys.argv[1]))
-    conn.commit()
-    conn.close()
-ai.headlessMode()
 ai.start(AI_loop, ["-name", "ExpertSystem", "-join", "localhost"])

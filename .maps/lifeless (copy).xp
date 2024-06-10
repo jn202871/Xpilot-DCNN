@@ -97,7 +97,7 @@ missilesonradar : no
 minesonradar : no
 nukesonradar : no
 treasuresonradar : no
-teamplay : no
+teamplay : yes
 teamassign : yes
 teamimmunity : no
 teamcannons : no
@@ -262,7 +262,7 @@ teamsharescore : no
 
 mapData: \multiline: EndOfMapdata
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-x  11          11          11  x
+x  12          12          21  x
 x                              x
 x                              x
 x                              x
@@ -270,12 +270,12 @@ x                              x
 x                              x
 x                              x
 xxxx                        xxxx
+x2                            1x
 x                              x
-x                              x
-x            1    1            x
+x            2    1            x
 x            x    x            x
 x            x    x            x
-x        1  1x1111x1  1        x
+x        1  2x1212x1  2        x
 x        xxxxxxxxxxxxxx        x
 x        xx    xx    xx        x
 x        x     xx     x        x
@@ -283,7 +283,7 @@ x              xx              x
 x              xx              x
 x                              x
 x                              x
-x1                            1x
+x1                            2x
 xxxx                        xxxx
 x                              x
 x                              x
@@ -291,6 +291,6 @@ x                              x
 x                              x
 x                              x
 x                              x
-x  11          11          11  x
+x  12          12          21  x
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 EndOfMapdata

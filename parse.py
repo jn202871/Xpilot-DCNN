@@ -1,7 +1,7 @@
 import sqlite3
 
 data = open("data.txt", 'r')
-conn = sqlite3.connect('xpilot_data.db')
+conn = sqlite3.connect('./dcnn/match_data.db')
 cursor = conn.cursor()
 while True:
     frame = data.readline().strip()

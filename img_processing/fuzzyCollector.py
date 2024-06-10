@@ -4,9 +4,15 @@ import random as random
 import math
 from PIL import Image, ImageGrab
 import sqlite3
+import sys
+global CurrentRound,alive,lastScore,pauseWrite
+CurrentRound = 0
+alive = True
+pauseWrite = False
+lastScore = 0.0
 
 def AI_loop():
-
+    global CurrentRound,alive,lastScore,pauseWrite
     area = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -49,7 +55,6 @@ def AI_loop():
     aimdir = ai.aimdir(0)
     if (aimdir < 0):
         aimdir = -1
-    print(aimdir)
     area[y_cord][x_cord+1] = int(ai.selfSpeed())
     area[y_cord][x_cord-1] = int(aimdir)
     area[y_cord+1][x_cord] = int(ai.selfHeadingDeg())
@@ -263,10 +268,21 @@ def AI_loop():
         file.write(frameStr + '\n')
         file.write(actionStr+ '\n')
         file.close()
+    if (pauseWrite == True):
+        pauseWrite = False
     if (ai.selfAlive() == 1):
-      for row in area:
-        for val in row:
-          print(val, end="")
-        print()
-    
-ai.start(AI_loop,["-name","Collector","-join","localhost"])
+        if (alive != True):
+            alive = True
+    else:
+        if (alive != False):
+            alive = False
+            pauseWrite = True
+            CurrentRound += 1
+    if (pauseWrite == False):
+        conn = sqlite3.connect('score_data.db')
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO ExpertScores (Score,Round,Match) values(?,?,?)",(ai.selfScore(),CurrentRound,sys.argv[1]))
+        conn.commit()
+        conn.close()
+
+ai.start(AI_loop,["-name","FuzzySystem","-join","localhost"])

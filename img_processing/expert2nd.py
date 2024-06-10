@@ -1,15 +1,7 @@
 import libpyAI as ai
 import math
-import sys
-import sqlite3
 
-global CurrentRound,alive,lastScore,pauseWrite
-CurrentRound = 0
-alive = True
-pauseWrite = False
-lastScore = 0.0
 def AI_loop():
-  global CurrentRound,alive,lastScore,pauseWrite
   area = [
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -192,26 +184,9 @@ def AI_loop():
   if (ai.selfAlive() == 1):
     frameStr = ','.join(str(item) for innerlist in area for item in innerlist)
     actionStr = str(thrust) + "," + str(fireShot) + "," +str(turnLeft) + "," + str(turnRight)
-    file = open("data.txt", "a")
+    file = open("data2.txt", "a")
     file.write(frameStr + '\n')
     file.write(actionStr+ '\n')
     file.close()
     
-  if (pauseWrite == True):
-    pauseWrite = False
-  if (ai.selfAlive() == 1):
-    if (alive != True):
-      alive = True
-  else:
-    if (alive != False):
-      alive = False
-      pauseWrite = True
-      CurrentRound += 1
-  if (pauseWrite == False):
-    conn = sqlite3.connect('score_data.db')
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO ExpertScores (Score,Round,Match) values(?,?,?)",(ai.selfScore(),CurrentRound,sys.argv[1]))
-    conn.commit()
-    conn.close()
-ai.headlessMode()
-ai.start(AI_loop, ["-name", "ExpertSystem", "-join", "localhost"])
+ai.start(AI_loop, ["-name", "ExpertSystem2", "-join", "localhost"])

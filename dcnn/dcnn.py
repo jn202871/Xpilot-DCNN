@@ -14,14 +14,14 @@ alpha = 0.0001
 epochs = 1000
 hiddenlayers = 4
 layerwidth = 4096
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 print("Hyperparameters Created")
 print("Using Compute Resource:", device)
 
 # Connect to SQLite database
 conn = sqlite3.connect('xpilot_data.db')
 cursor = conn.cursor()
-cursor.execute("SELECT frame, actions FROM frames LIMIT 600000")
+cursor.execute("SELECT frame, actions FROM frames LIMIT 1000000")
 db_data = cursor.fetchall()
 conn.close()
 print("Connected to SQLite database and fetched data")
@@ -49,8 +49,8 @@ split_ratio = 0.8
 split_idx = int(len(dataset) * split_ratio)
 train_dataset, val_dataset = data.random_split(dataset, [split_idx, len(dataset) - split_idx])
 
-train_loader = data.DataLoader(train_dataset, batch_size=64, shuffle=True, pin_memory=True, num_workers=16, drop_last=True)
-val_loader = data.DataLoader(val_dataset, batch_size=64, shuffle=False, pin_memory=True, num_workers=16, drop_last=True)
+train_loader = data.DataLoader(train_dataset, batch_size=64, shuffle=True, pin_memory=True, num_workers=4, drop_last=True)
+val_loader = data.DataLoader(val_dataset, batch_size=64, shuffle=False, pin_memory=True, num_workers=4, drop_last=True)
 
 print("TensorDataset and DataLoaders created")
 
@@ -63,21 +63,21 @@ class DCNNClassifier(nn.Module):
         self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=(1,1), padding=1)
         self.bn2 = nn.BatchNorm2d(32)
         self.pool = nn.MaxPool2d((2,2))
-        self.fc1 = nn.Linear(8192,layerwidth) #8192
+        self.fc1 = nn.Linear(8192, layerwidth)
         self.bn3 = nn.BatchNorm1d(layerwidth)
-        self.fc2 = nn.Linear(layerwidth,layerwidth)
+        self.fc2 = nn.Linear(layerwidth, layerwidth)
         self.bn4 = nn.BatchNorm1d(layerwidth)
-        self.fc3 = nn.Linear(layerwidth,layerwidth)
+        self.fc3 = nn.Linear(layerwidth, layerwidth)
         self.bn5 = nn.BatchNorm1d(layerwidth)
-        self.fc4 = nn.Linear(layerwidth,4)
+        self.lstm = nn.LSTM(layerwidth, 256, num_layers=1, batch_first=True)
+        self.fc_out = nn.Linear(256, 4)  # Adjust the output size to match your label size
         self.relu = nn.ReLU()
-        self.sigmoid = nn.Sigmoid()
         self.drop = nn.Dropout(0.5)
 
     def convStep(self, x):
         x = self.relu(self.bn1(self.conv1(x)))
         x = self.pool(self.relu(self.bn2(self.conv2(x))))
-        x = torch.flatten(x,1)
+        x = torch.flatten(x, 1)
         return x
 
     def forward(self, x):
@@ -94,8 +94,9 @@ class DCNNClassifier(nn.Module):
         x = self.bn5(x)
         x = self.relu(x)
         x = self.drop(x)
-        x = self.fc4(x)
-        #x = self.sigmoid(x)
+        x = x.unsqueeze(1)
+        x, (hn, cn) = self.lstm(x)
+        x = self.fc_out(x[:, -1, :])
         return x
 
 print("DCNN class constructed")
@@ -144,7 +145,7 @@ for epoch in range(epochs):
     end = time.time()
     form1, form2, form3 = "{:<09}", "{:e}", "{:02d}"
     if (epoch % 10 == 0):
-        path = f"./models/modelstate_{epoch}_{avg_val_loss}.pt"
+        path = f"./models/lstm/modelstate_{epoch}_{avg_val_loss}.pt"
         torch.save(model.state_dict(), path)
     print(f"Epoch {form3.format(epoch+1)}/{epochs}: Training Loss: {form1.format(round(loss.item(),7))}, Validation Loss: {form1.format(round(avg_val_loss,7))}, LR: {form2.format(optimizer.param_groups[-1]['lr'])} Time: {form1.format(round(end-start,2))}")
     #wandb.log({"train_loss": loss.item(), "val_loss": avg_val_loss,"epoch": epoch})

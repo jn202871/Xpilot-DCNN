@@ -122,45 +122,45 @@ def AI_loop():
   trackWallT = trackWall+trackWallR+trackWallL
   
   # Small production system for thrust
-  if frontWallT > 1500 and ai.selfSpeed() < 10:
+  if frontWallT > 2000 and ai.selfSpeed() < 10:
     ai.thrust(1)
     thrust = 1
   elif frontWallT > leftWallT and frontWallT > rightWallT and frontWallT > backWallT and ai.selfSpeed() < 10:
     ai.thrust(1)
     thrust = 1
-  elif trackWallT < 450 and 270 >= abs(tracking-heading) >= 90:
+  elif trackWallT < 550 and 270 >= abs(tracking-heading) >= 90:
     ai.thrust(1)
     thrust = 1
   elif backWall < 10:
     ai.thrust(1)
     thrust = 1
-  elif ai.selfSpeed() < 1 and frontWallT > 200:
+  elif ai.selfSpeed() < 1 and frontWallT > 300:
     ai.thrust(1)
     thrust = 1
     
   # Main production system for turning and aiming
-  if heading > ai.aimdir(0) and ai.enemyDistance(0) < 300 and trackWall > 100:
+  if heading > ai.aimdir(0) and ai.enemyDistance(0) < 400 and trackWall > 100:
     ai.turnRight(1)
     turnRight = 1
-  elif heading < ai.aimdir(0) and ai.enemyDistance(0) < 300 and trackWall > 100:
+  elif heading < ai.aimdir(0) and ai.enemyDistance(0) < 400 and trackWall > 100:
     ai.turnLeft(1)
     turnLeft = 1
-  elif leftWallT > rightWallT and trackWallT > 900 and ai.selfSpeed() > 5:
+  elif leftWallT > rightWallT and trackWallT > 1000 and ai.selfSpeed() > 5:
     ai.turnLeft(1)
     turnLeft = 1
-  elif leftWallT < rightWallT and trackWallT > 900 and ai.selfSpeed() > 5:
+  elif leftWallT < rightWallT and trackWallT > 1000 and ai.selfSpeed() > 5:
     ai.turnRight(1)
     turnRight = 1
-  elif heading > (tracking+180)%360 and trackWallT < 900 and ai.selfSpeed() > 10:
+  elif heading > (tracking+180)%360 and trackWallT < 1000 and ai.selfSpeed() > 10:
     ai.turnRight(1)
     turnRight = 1
-  elif heading < (tracking+180)%360 and trackWallT < 900 and ai.selfSpeed() > 10:
+  elif heading < (tracking+180)%360 and trackWallT < 1000 and ai.selfSpeed() > 10:
     ai.turnLeft(1)
     turnLeft = 1
-  elif leftWallT > rightWallT and trackWallT < 500:
+  elif leftWallT > rightWallT and trackWallT < 600:
     ai.turnLeft(1)
     turnLeft = 1
-  elif rightWallT > leftWallT and trackWallT < 500:
+  elif rightWallT > leftWallT and trackWallT < 600:
     ai.turnRight(1)
     turnRight = 1
   elif heading > ai.aimdir(0) and frontWallT > 100 and leftWallT > 100 and rightWallT > 100 and backWallT > 100:
@@ -184,9 +184,12 @@ def AI_loop():
   if (ai.selfAlive() == 1):
     frameStr = ','.join(str(item) for innerlist in area for item in innerlist)
     actionStr = str(thrust) + "," + str(fireShot) + "," +str(turnLeft) + "," + str(turnRight)
-    file = open("data2.txt", "a")
+    file = open("data.txt", "a")
     file.write(frameStr + '\n')
     file.write(actionStr+ '\n')
     file.close()
+    file = open("expertscore.txt", "w")
+    file.write(str(ai.selfScore()) + '\n')
+    file.close()
     
-ai.start(AI_loop, ["-name", "ExpertSystem2", "-join", "localhost"])
+ai.start(AI_loop, ["-name", "ExpertSystem", "-join", "localhost"])
