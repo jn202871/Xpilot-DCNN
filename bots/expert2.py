@@ -52,9 +52,9 @@ def AI_loop():
     ai.thrust(1)
   elif backWall < 10:
     ai.thrust(1)
-  elif ai.selfSpeed() < 5:
+  elif ai.selfSpeed() < 5 and frontWallT > 150:
     ai.thrust(1)
-    
+  aimDiff = ((ai.aimdir(0)-heading+540)%360)-180
   # Main production system for turning and aiming
   if heading > ai.aimdir(0) and ai.enemyDistance(0) < 300 and trackWall > 100:
     ai.turnRight(1)
@@ -72,9 +72,9 @@ def AI_loop():
     ai.turnLeft(1)
   elif rightWallT > leftWallT and trackWallT < 500:
     ai.turnRight(1)
-  elif heading > ai.aimdir(0) and frontWallT > 100 and leftWallT > 100 and rightWallT > 100 and backWallT > 100:
+  elif aimDiff > 0 and frontWallT > 100 and leftWallT > 100 and rightWallT > 100 and backWallT > 100:
     ai.turnRight(1)
-  elif heading < ai.aimdir(0) and frontWallT > 100 and leftWallT > 100 and rightWallT > 100 and backWallT > 100:
+  elif aimDiff < 0 and frontWallT > 100 and leftWallT > 100 and rightWallT > 100 and backWallT > 100:
     ai.turnLeft(1)
   elif leftWallT > rightWallT:
     ai.turnLeft(1)
@@ -82,7 +82,7 @@ def AI_loop():
     ai.turnRight(1)
     
   # Shooting
-  if (ai.aimdir(0)+5)%360 >= heading >= (ai.aimdir(0)-5)%360:
+  if (ai.aimdir(0)+3)%360 >= heading >= (ai.aimdir(0)-3)%360:
     ai.fireShot()
     	
 

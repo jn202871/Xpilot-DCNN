@@ -174,24 +174,14 @@ def AI_loop():
     if (outputs[0][3]>=0.8 and outputs[0][3]>outputs[0][2]):
         right = 1
         ai.turnRight(1)
-    if (pauseWrite == True):
-        pauseWrite = False
-    if (ai.selfAlive() == 1):
-        if (alive != True):
-            alive = True
-    else:
-        if (alive != False):
-            alive = False
-            pauseWrite = True
-            CurrentRound += 1
-    if (pauseWrite == False):
-        conn = sqlite3.connect('score_data.db')
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO DCNNScores (Score,Round,Match) values(?,?,?)",(ai.selfScore(),CurrentRound,sys.argv[1]))
-        conn.commit()
-        conn.close()
+    try:
+        with open('score2.txt', 'w') as file:
+            file.write(str(ai.selfScore()))
+    except Exception as e:
+        print("The error is: ",e)
     
-layerwidth = 4096
+firstwidth = 512
+secondwidth = 256
 class DCNNClassifier(nn.Module):
     def __init__(self):
         super(DCNNClassifier, self).__init__()
@@ -200,14 +190,15 @@ class DCNNClassifier(nn.Module):
         self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=(1,1), padding=1)
         self.bn2 = nn.BatchNorm2d(32)
         self.pool = nn.MaxPool2d((2,2))
-        self.fc1 = nn.Linear(8192, layerwidth)
-        self.bn3 = nn.BatchNorm1d(layerwidth)
-        self.fc2 = nn.Linear(layerwidth, layerwidth)
-        self.bn4 = nn.BatchNorm1d(layerwidth)
-        self.fc3 = nn.Linear(layerwidth, layerwidth)
-        self.bn5 = nn.BatchNorm1d(layerwidth)
-        self.lstm = nn.LSTM(layerwidth, 256, num_layers=1, batch_first=True)
-        self.fc_out = nn.Linear(256, 4)  # Adjust the output size to match your label size
+        self.fc1 = nn.Linear(8192, firstwidth)
+        self.bn3 = nn.BatchNorm1d(firstwidth)
+        self.fc2 = nn.Linear(firstwidth, secondwidth)
+        self.bn4 = nn.BatchNorm1d(secondwidth)
+        #self.fc3 = nn.Linear(secondwidth, secondwidth)
+        #self.bn5 = nn.BatchNorm1d(secondwidth)
+        #self.lstm = nn.LSTM(secondwidth, 256, num_layers=1, batch_first=True)
+        #self.fc_out_lstm = nn.Linear(256, 4)  # Adjust the output size to match your label size
+        self.fc_out = nn.Linear(secondwidth, 4)  # Adjust the output size to match your label size
         self.relu = nn.ReLU()
         self.drop = nn.Dropout(0.5)
 
@@ -227,13 +218,14 @@ class DCNNClassifier(nn.Module):
         x = self.bn4(x)
         x = self.relu(x)
         x = self.drop(x)
-        x = self.fc3(x)
-        x = self.bn5(x)
-        x = self.relu(x)
-        x = self.drop(x)
-        x = x.unsqueeze(1)
-        x, (hn, cn) = self.lstm(x)
-        x = self.fc_out(x[:, -1, :])
+        #x = self.fc3(x)
+        #x = self.bn5(x)
+        #x = self.relu(x)
+        #x = self.drop(x)
+        #x = x.unsqueeze(1)
+        #x, (hn, cn) = self.lstm(x)
+        #x = self.fc_out_lstm(x[:, -1, :])
+        x = self.fc_out(x)
         return x
 
 model = DCNNClassifier()
