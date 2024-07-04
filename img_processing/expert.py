@@ -189,29 +189,15 @@ def AI_loop():
     ai.fireShot()
     fireShot = 1
     
-  if (ai.selfAlive() == 1):
-    frameStr = ','.join(str(item) for innerlist in area for item in innerlist)
-    actionStr = str(thrust) + "," + str(fireShot) + "," +str(turnLeft) + "," + str(turnRight)
-    file = open("data.txt", "a")
-    file.write(frameStr + '\n')
-    file.write(actionStr+ '\n')
-    file.close()
-    
-  if (pauseWrite == True):
-    pauseWrite = False
-  if (ai.selfAlive() == 1):
-    if (alive != True):
-      alive = True
-  else:
-    if (alive != False):
-      alive = False
-      pauseWrite = True
-      CurrentRound += 1
-  if (pauseWrite == False):
-    conn = sqlite3.connect('score_data.db')
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO ExpertScores (Score,Round,Match) values(?,?,?)",(ai.selfScore(),CurrentRound,sys.argv[1]))
-    conn.commit()
-    conn.close()
-ai.headlessMode()
+  try:
+    if (ai.selfAlive() == 1):
+      with open("data.txt", "a") as file:
+        frameStr = ','.join(str(item) for innerlist in area for item in innerlist)
+        actionStr = f"{thrust},{fireShot},{turnLeft},{turnRight}"
+        file.write(f"{frameStr}\n{actionStr}\n")
+    with open('score1.txt', 'w') as file:
+      file.write(str(ai.selfScore()))
+  except Exception as e:
+    print("The error is: ",e)
+  
 ai.start(AI_loop, ["-name", "ExpertSystem", "-join", "localhost"])

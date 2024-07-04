@@ -192,4 +192,4 @@ def AI_loop():
     file.write(str(ai.selfScore()) + '\n')
     file.close()
     
-ai.start(AI_loop, ["-name", "ExpertSystem", "-join", "localhost"])
+ai.start(AI_loop, ["-name", "ExpertSystem", "-join", "136.244.224.61"])

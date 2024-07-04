@@ -7,36 +7,66 @@ import torch.optim as optim
 import torch.utils.data as data
 import sys
 import time
+import os
+import pickle
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 # Hyperparameters
 alpha = 0.0001
 epochs = 1000
 hiddenlayers = 4
-layerwidth = 4096
-device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+firstwidth = 512
+secondwidth = 256
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print("Hyperparameters Created")
 print("Using Compute Resource:", device)
 
-# Connect to SQLite database
-conn = sqlite3.connect('xpilot_data.db')
-cursor = conn.cursor()
-cursor.execute("SELECT frame, actions FROM frames LIMIT 1000000")
-db_data = cursor.fetchall()
-conn.close()
-print("Connected to SQLite database and fetched data")
-
 # Preprocess data
-actions = [[int(number) for number in string[1].split(',')] for string in db_data]
-frames = [[int(number) for number in string[0].split(',')] for string in db_data]
+def load_data():
+    with open('actions.pkl', 'rb') as f:
+        loaded_actions = pickle.load(f)
+    with open('frames.pkl', 'rb') as f:
+        loaded_frames = pickle.load(f)
+    return loaded_actions, loaded_frames
 
-def convert32x32(frame):
-  return [frame[i:i + 32] for i in range(0,1024,32)]
+def save_data(actions, frames):
+    with open('actions.pkl', 'wb') as f:
+        pickle.dump(actions, f)
+    with open('frames.pkl', 'wb') as f:
+        pickle.dump(frames, f)
+    print("Data saved to files.")
 
-frames = [convert32x32(frame) for frame in frames]
+def preprocess_data():
+    # Connect to SQLite database
+    conn = sqlite3.connect('xpilot_data.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT frame, actions FROM frames LIMIT 1000000")
+    db_data = cursor.fetchall()
+    conn.close()
+    print("Connected to SQLite database and fetched data")
 
-actions = torch.tensor(actions, dtype=torch.float32).view(len(actions), -1)
-frames = torch.tensor(frames, dtype=torch.float32).view(-1,1,32,32)
+    # Preprocess data
+    actions = [[int(number) for number in string[1].split(',')] for string in db_data]
+    frames = [[int(number) for number in string[0].split(',')] for string in db_data]
+
+    def convert32x32(frame):
+        return [frame[i:i + 32] for i in range(0, 1024, 32)]
+
+    frames = [convert32x32(frame) for frame in frames]
+
+    actions = torch.tensor(actions, dtype=torch.float32).view(len(actions), -1)
+    frames = torch.tensor(frames, dtype=torch.float32).view(-1, 1, 32, 32)
+    
+    save_data(actions, frames)
+    return actions, frames
+
+# Check if the data is already processed and saved
+if os.path.exists('actions.pkl') and os.path.exists('frames.pkl'):
+    print("Loading data from files...")
+    actions, frames = load_data()
+else:
+    print("Preprocessing data...")
+    actions, frames = preprocess_data()
 
 print("Data preprocessed")
 print("Actions Tensor Shape:", actions.shape)
@@ -49,8 +79,8 @@ split_ratio = 0.8
 split_idx = int(len(dataset) * split_ratio)
 train_dataset, val_dataset = data.random_split(dataset, [split_idx, len(dataset) - split_idx])
 
-train_loader = data.DataLoader(train_dataset, batch_size=64, shuffle=True, pin_memory=True, num_workers=4, drop_last=True)
-val_loader = data.DataLoader(val_dataset, batch_size=64, shuffle=False, pin_memory=True, num_workers=4, drop_last=True)
+train_loader = data.DataLoader(train_dataset, batch_size=128, shuffle=True, pin_memory=True, num_workers=4, drop_last=True)
+val_loader = data.DataLoader(val_dataset, batch_size=128, shuffle=False, pin_memory=True, num_workers=4, drop_last=True)
 
 print("TensorDataset and DataLoaders created")
 
@@ -63,14 +93,15 @@ class DCNNClassifier(nn.Module):
         self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=(1,1), padding=1)
         self.bn2 = nn.BatchNorm2d(32)
         self.pool = nn.MaxPool2d((2,2))
-        self.fc1 = nn.Linear(8192, layerwidth)
-        self.bn3 = nn.BatchNorm1d(layerwidth)
-        self.fc2 = nn.Linear(layerwidth, layerwidth)
-        self.bn4 = nn.BatchNorm1d(layerwidth)
-        self.fc3 = nn.Linear(layerwidth, layerwidth)
-        self.bn5 = nn.BatchNorm1d(layerwidth)
-        self.lstm = nn.LSTM(layerwidth, 256, num_layers=1, batch_first=True)
-        self.fc_out = nn.Linear(256, 4)  # Adjust the output size to match your label size
+        self.fc1 = nn.Linear(8192, firstwidth)
+        self.bn3 = nn.BatchNorm1d(firstwidth)
+        self.fc2 = nn.Linear(firstwidth, secondwidth)
+        self.bn4 = nn.BatchNorm1d(secondwidth)
+        #self.fc3 = nn.Linear(secondwidth, secondwidth)
+        #self.bn5 = nn.BatchNorm1d(secondwidth)
+        #self.lstm = nn.LSTM(secondwidth, 256, num_layers=1, batch_first=True)
+        #self.fc_out_lstm = nn.Linear(256, 4)  # Adjust the output size to match your label size
+        self.fc_out = nn.Linear(secondwidth, 4)  # Adjust the output size to match your label size
         self.relu = nn.ReLU()
         self.drop = nn.Dropout(0.5)
 
@@ -90,19 +121,22 @@ class DCNNClassifier(nn.Module):
         x = self.bn4(x)
         x = self.relu(x)
         x = self.drop(x)
-        x = self.fc3(x)
-        x = self.bn5(x)
-        x = self.relu(x)
-        x = self.drop(x)
-        x = x.unsqueeze(1)
-        x, (hn, cn) = self.lstm(x)
-        x = self.fc_out(x[:, -1, :])
+        #x = self.fc3(x)
+        #x = self.bn5(x)
+        #x = self.relu(x)
+        #x = self.drop(x)
+        #x = x.unsqueeze(1)
+        #x, (hn, cn) = self.lstm(x)
+        #x = self.fc_out_lstm(x[:, -1, :])
+        x = self.fc_out(x)
         return x
 
 print("DCNN class constructed")
 
 # Check GPU availability
 model = DCNNClassifier().to(device)
+total_params = sum(p.numel() for p in model.parameters())
+print(f"Parameters: {total_params}")
 print("Using Compute Resource:", device)
 
 # Setup Training
